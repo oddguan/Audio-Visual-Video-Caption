@@ -10,6 +10,53 @@ from scipy.io import wavfile
 from scipy import signal
 import numpy as np
 import matplotlib.pyplot as plt
+import glob
+
+import torch
+import torch.nn as nn
+
+import pretrainedmodels
+import pretrainedmodels.utils as utils
+
+C, H, W = 3, 224, 224
+
+def extract_frame(video, dst):
+    with open(os.devnull, "w") as ffmpeg_log:
+        if os.path.exists(dst):
+            command = 'ffmpeg -i ' + video + ' -vf fps=15 ' + '{0}/%06d.jpg'.format(dst)
+            subprocess.call(command, stdout=ffmpeg_log, stderr=ffmpeg_log)
+
+def extract_image_feats(opt, model, load_image_fn):
+    global C, H, W
+    model.eval()
+
+    dir_fc = opt['output_dir']
+    
+    print('extracting video features...')
+    print('save video features to %s' % (dir_fc))
+
+    video_list = glob.glob(os.path.join(opt['video_dir'], '*.mp4'))
+    for video in tqdm(video_list):
+        video_id = video.split("/")[-1].split(".")[0]
+        dst = dir_fc +video_id
+        extract_frame(video, dst)
+
+        image_list = sorted(glob.glob(os.path.join(dst, '*.jpg')))
+        images = torch.zeros((len(image_list), C, H, W))
+        for i in range(len(image_list)):
+            img = load_image_fn(image_list[i])
+            images[i] = img
+        
+        with torch.no_grad():
+            image_feats = model(images.cuda().squeeze())
+        image_feats = image_feats.cpu().numpy()
+        outfile = os.path.join(dst, video_id+'.npy')
+        np.save(outfile, image_feats)
+        for file in dst:
+            if file.endswith('.jpg'):
+                os.remove(os.path.join(dst, file))
+
+
 
 def vToA(opt):
     video_dir = opt['video_dir']
@@ -47,13 +94,15 @@ def split_audio(opt):
         with open(os.devnull, 'w') as ffmpeg_log:
             command = 'ffmpeg -i ' + audio + ' -f segment -segment_time 1 -c copy ' + dst+ '/' + '%02d.wav'
             subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
-        for segment in os.listdir(dst):
-            segment = dst + '/' + segment
-            sample_rate, audio_info = wavfile.read(segment)
-            #print(audio_info.shape)
-            audio_info = audio_info.astype(np.float32)
-            mfcc_feats = mfcc(audio_info, sr=sample_rate)
-            #print(mfcc_feats.shape)
+        
+        
+        # for segment in os.listdir(dst):
+        #     segment = dst + '/' + segment
+        #     sample_rate, audio_info = wavfile.read(segment)
+        #     #print(audio_info.shape)
+        #     audio_info = audio_info.astype(np.float32)
+        #     mfcc_feats = mfcc(audio_info, sr=sample_rate)
+        #     #print(mfcc_feats.shape)
     
     
 
@@ -62,14 +111,17 @@ def main():
     parser.add_argument('--video_dir', type=str, 
     help='The video dir that one would like to extract audio file from')
     parser.add_argument('--output_dir', type=str, 
-    help='The audio file output directory')
+    help='The file output directory')
     parser.add_argument('--output_channels', type=int, default=1, 
     help='The number of output audio channels, default to 1')
     parser.add_argument('--output_frequency', type=int, default=16000, 
     help='The output audio frequency in Hz, default to 16000')
     parser.add_argument('--band_width', type=int, default=160, 
     help='Bandwidth specified to sample the audio (unit in kbps), default to 160')
-    
+    parser.add_argument('--model', type=str, default='resnet152', 
+    help='The pretrained model to use for extracting image features, default to resnet152')
+    parser.add_argument('--gpu', type=str, default='0', 
+    help='The CUDA_VISIBLE_DEVICES argument, default to 0')
     opt = parser.parse_args()
     opt=vars(opt)
 
@@ -81,7 +133,28 @@ def main():
     for file in dir:
         if file.endswith('.wav'):
             os.remove(os.path.join(opt['output_dir'], file))
-    print('done')
+    
+    os.environ['CUDA_VISIBLE_DEVICES'] = opt['gpu']
+    if opt['model'] == 'resnet152':
+        C, H, W = 3, 224, 224
+        model = pretrainedmodels.resnet152(pretrained='imagenet')
+        load_image_fn = utils.LoadTransformImage(model)
+    elif opt['model'] == 'inception_v3':
+        C, H, W = 3, 299, 299
+        model = pretrainedmodels.inceptionv3(pretrained='imagenet')
+        load_image_fn = utils.LoadTransformImage(model)
+    elif opt['model'] == 'vgg16':
+        C, H, W = 3, 224, 224
+        model = pretrainedmodels.vgg16(pretrained=True)
+        load_image_fn = utils.LoadTransformImage(model)
+    else:
+        print('The image model is not supported')
+    
+    model.last_linear = utils.Identity()
+    model = nn.DataParallel(model)
+
+    model = model.cuda()
+    extract_image_feats(opt, model, load_image_fn)
 
 if __name__ == '__main__':
     main()
