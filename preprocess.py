@@ -50,9 +50,9 @@ def extract_image_feats(opt, model, load_image_fn):
         with torch.no_grad():
             image_feats = model(images.cuda().squeeze())
         image_feats = image_feats.cpu().numpy()
-        outfile = os.path.join(dst, video_id+'.npy')
+        outfile = os.path.join(dst, 'video.npy')
         np.save(outfile, image_feats)
-        for file in dst:
+        for file in os.listdir(dst):
             if file.endswith('.jpg'):
                 os.remove(os.path.join(dst, file))
 
@@ -95,15 +95,25 @@ def split_audio(opt):
             command = 'ffmpeg -i ' + audio + ' -f segment -segment_time 1 -c copy ' + dst+ '/' + '%02d.wav'
             subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
         
-        
-        # for segment in os.listdir(dst):
-        #     segment = dst + '/' + segment
-        #     sample_rate, audio_info = wavfile.read(segment)
-        #     #print(audio_info.shape)
-        #     audio_info = audio_info.astype(np.float32)
-        #     mfcc_feats = mfcc(audio_info, sr=sample_rate)
-        #     #print(mfcc_feats.shape)
-    
+        output = np.zeros((20, 0))
+        for segment in os.listdir(dst):
+            segment = dst + '/' + segment
+            sample_rate, audio_info = wavfile.read(segment)
+            audio_length = audio_info.shape[0]
+            if audio_length<=16000:
+                audio_info = np.pad(audio_info, (0, 16000-audio_length), 'constant', constant_values=0)
+            else:
+                audio_info = audio_info[0:16000]
+            audio_info = audio_info.astype(np.float32)
+            mfcc_feats = mfcc(audio_info, sr=sample_rate)
+            print(mfcc_feats.shape)
+            output = np.concatenate((output, mfcc_feats), axis=1)
+        print(output.shape)
+        outfile = os.path.join(dst, 'audio.npy')
+        np.save(outfile, output)
+        for file in os.listdir(dst):
+            if file.endswith('.wav'):
+                os.remove(os.path.join(dst, file))
     
 
 def main():
@@ -134,27 +144,27 @@ def main():
         if file.endswith('.wav'):
             os.remove(os.path.join(opt['output_dir'], file))
     
-    os.environ['CUDA_VISIBLE_DEVICES'] = opt['gpu']
-    if opt['model'] == 'resnet152':
-        C, H, W = 3, 224, 224
-        model = pretrainedmodels.resnet152(pretrained='imagenet')
-        load_image_fn = utils.LoadTransformImage(model)
-    elif opt['model'] == 'inception_v3':
-        C, H, W = 3, 299, 299
-        model = pretrainedmodels.inceptionv3(pretrained='imagenet')
-        load_image_fn = utils.LoadTransformImage(model)
-    elif opt['model'] == 'vgg16':
-        C, H, W = 3, 224, 224
-        model = pretrainedmodels.vgg16(pretrained=True)
-        load_image_fn = utils.LoadTransformImage(model)
-    else:
-        print('The image model is not supported')
+    # os.environ['CUDA_VISIBLE_DEVICES'] = opt['gpu']
+    # if opt['model'] == 'resnet152':
+    #     C, H, W = 3, 224, 224
+    #     model = pretrainedmodels.resnet152(pretrained='imagenet')
+    #     load_image_fn = utils.LoadTransformImage(model)
+    # elif opt['model'] == 'inception_v3':
+    #     C, H, W = 3, 299, 299
+    #     model = pretrainedmodels.inceptionv3(pretrained='imagenet')
+    #     load_image_fn = utils.LoadTransformImage(model)
+    # elif opt['model'] == 'vgg16':
+    #     C, H, W = 3, 224, 224
+    #     model = pretrainedmodels.vgg16(pretrained=True)
+    #     load_image_fn = utils.LoadTransformImage(model)
+    # else:
+    #     print('The image model is not supported')
     
-    model.last_linear = utils.Identity()
-    model = nn.DataParallel(model)
+    # model.last_linear = utils.Identity()
+    # model = nn.DataParallel(model)
 
-    model = model.cuda()
-    extract_image_feats(opt, model, load_image_fn)
+    # model = model.cuda()
+    # extract_image_feats(opt, model, load_image_fn)
 
 if __name__ == '__main__':
     main()
