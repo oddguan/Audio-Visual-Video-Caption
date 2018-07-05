@@ -30,7 +30,7 @@ class MultimodalAtt(nn.Module):
         self.audio_rnn_encoder = self.rnn_cell(self.dim_audio, self.dim_hidden, self.n_layers, dropout=rnn_dropout_p)
 
         self.naive_fusion = nn.Linear(self.dim_hidden*2, dim_hidden, bias=False)
-
+        self.fuse_input = nn.Linear(2, 1)
         self.decoder = self.rnn_cell(self.dim_hidden+self.dim_word, self.dim_hidden, n_layers, dropout=rnn_dropout_p)
 
         self.embedding = nn.Embedding(self.dim_output, self.dim_word)
@@ -49,45 +49,47 @@ class MultimodalAtt(nn.Module):
         decoder_h0 = F.Tanh(self.naive_fusion(decoder_h0))
         decoder_c0 = video_cell_state + audio_cell_state
 
-        padded_decoder_input = pack_sequence([audio_encoder_output, video_encoder_output])
+        decoder_input = pack_sequence([audio_encoder_output, video_encoder_output])
+        decoder_input = torch.transpose(decoder_input, 1, 3)
+        decoder_input = self.fuse_input(decoder_input)
+        decoder_input = torch.transpose(decoder_input, 1, 3).squeeze(1)
 
-        decoder_input = torch.cat((video_encoder_output, audio_encoder_output), dim)
-        decoder_output, (decoder_hidden, decoder_cell) = self.decoder()
-        seq_probs = []
-        seq_preds = []
+        decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_h0, decoder_c0))
+        seq_probs = list()
+        seq_preds = list()
         if mode == 'train':
             for i in range(self.max_length - 1):
                 # <eos> doesn't input to the network
                 current_words = self.embedding(target_variable[:, i])
-                self.rnn1.flatten_parameters()
-                self.rnn2.flatten_parameters()
-                output1, state1 = self.rnn1(padding_frames, state1)
-                input2 = torch.cat(
-                    (output1, current_words.unsqueeze(1)), dim=2)
+                self.video_rnn_encoder.flatten_parameters()
+                self.audio_rnn_encoder.flatten_parameters()
+                self.decoder.flatten_parameters()
+                output1, (decoder_h0, decoder_c0) = self.rnn1(padding_frames, (decoder_h0, decoder_c0))
+                input2 = torch.cat((output1, current_words.unsqueeze(1)), dim=2)
                 output2, state2 = self.rnn2(input2, state2)
                 logits = self.out(output2.squeeze(1))
                 logits = F.log_softmax(logits, dim=1)
                 seq_probs.append(logits.unsqueeze(1))
             seq_probs = torch.cat(seq_probs, 1)
 
-        else:
-            current_words = self.embedding(
-                Variable(torch.LongTensor([self.sos_id] * batch_size)).cuda())
-            for i in range(self.max_length - 1):
-                self.rnn1.flatten_parameters()
-                self.rnn2.flatten_parameters()
-                output1, state1 = self.rnn1(padding_frames, state1)
-                input2 = torch.cat(
-                    (output1, current_words.unsqueeze(1)), dim=2)
-                output2, state2 = self.rnn2(input2, state2)
-                logits = self.out(output2.squeeze(1))
-                logits = F.log_softmax(logits, dim=1)
-                seq_probs.append(logits.unsqueeze(1))
-                _, preds = torch.max(logits, 1)
-                current_words = self.embedding(preds)
-                seq_preds.append(preds.unsqueeze(1))
-            seq_probs = torch.cat(seq_probs, 1)
-            seq_preds = torch.cat(seq_preds, 1)
+        # else:
+        #     current_words = self.embedding(
+        #         Variable(torch.LongTensor([self.sos_id] * batch_size)).cuda())
+        #     for i in range(self.max_length - 1):
+        #         self.rnn1.flatten_parameters()
+        #         self.rnn2.flatten_parameters()
+        #         output1, state1 = self.rnn1(padding_frames, state1)
+        #         input2 = torch.cat(
+        #             (output1, current_words.unsqueeze(1)), dim=2)
+        #         output2, state2 = self.rnn2(input2, state2)
+        #         logits = self.out(output2.squeeze(1))
+        #         logits = F.log_softmax(logits, dim=1)
+        #         seq_probs.append(logits.unsqueeze(1))
+        #         _, preds = torch.max(logits, 1)
+        #         current_words = self.embedding(preds)
+        #         seq_preds.append(preds.unsqueeze(1))
+        #     seq_probs = torch.cat(seq_probs, 1)
+        #     seq_preds = torch.cat(seq_preds, 1)
         return seq_probs, seq_preds
 
         
