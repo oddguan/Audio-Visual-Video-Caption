@@ -19,12 +19,16 @@ import pretrainedmodels
 import pretrainedmodels.utils as utils
 
 C, H, W = 3, 224, 224
+flag=True
 
 def extract_frame(video, dst):
+    global flag
     with open(os.devnull, "w") as ffmpeg_log:
         if os.path.exists(dst):
             command = 'ffmpeg -i ' + video + ' -vf fps=15 ' + '{0}/%06d.jpg'.format(dst)
             subprocess.call(command, stdout=ffmpeg_log, stderr=ffmpeg_log)
+        else:
+            flag=False
 
 def extract_image_feats(opt, model, load_image_fn):
     global C, H, W
@@ -38,9 +42,11 @@ def extract_image_feats(opt, model, load_image_fn):
     video_list = glob.glob(os.path.join(opt['video_dir'], '*.mp4'))
     for video in tqdm(video_list):
         video_id = video.split("/")[-1].split(".")[0]
-        dst = dir_fc +video_id
+        dst = dir_fc + '/' + video_id
         extract_frame(video, dst)
-
+        if not flag:
+            flag = True
+            continue
         image_list = sorted(glob.glob(os.path.join(dst, '*.jpg')))
         images = torch.zeros((len(image_list), C, H, W))
         for i in range(len(image_list)):
@@ -51,6 +57,7 @@ def extract_image_feats(opt, model, load_image_fn):
             image_feats = model(images.cuda().squeeze())
         image_feats = image_feats.cpu().numpy()
         outfile = os.path.join(dst, 'video.npy')
+        print(outfile)
         np.save(outfile, image_feats)
         for file in os.listdir(dst):
             if file.endswith('.jpg'):
