@@ -144,27 +144,27 @@ def main():
         if file.endswith('.wav'):
             os.remove(os.path.join(opt['output_dir'], file))
     
-    # os.environ['CUDA_VISIBLE_DEVICES'] = opt['gpu']
-    # if opt['model'] == 'resnet152':
-    #     C, H, W = 3, 224, 224
-    #     model = pretrainedmodels.resnet152(pretrained='imagenet')
-    #     load_image_fn = utils.LoadTransformImage(model)
-    # elif opt['model'] == 'inception_v3':
-    #     C, H, W = 3, 299, 299
-    #     model = pretrainedmodels.inceptionv3(pretrained='imagenet')
-    #     load_image_fn = utils.LoadTransformImage(model)
-    # elif opt['model'] == 'vgg16':
-    #     C, H, W = 3, 224, 224
-    #     model = pretrainedmodels.vgg16(pretrained=True)
-    #     load_image_fn = utils.LoadTransformImage(model)
-    # else:
-    #     print('The image model is not supported')
+    os.environ['CUDA_VISIBLE_DEVICES'] = opt['gpu']
+    if opt['model'] == 'resnet152':
+        C, H, W = 3, 224, 224
+        model = pretrainedmodels.resnet152(pretrained='imagenet')
+        load_image_fn = utils.LoadTransformImage(model)
+    elif opt['model'] == 'inception_v3':
+        C, H, W = 3, 299, 299
+        model = pretrainedmodels.inceptionv3(pretrained='imagenet')
+        load_image_fn = utils.LoadTransformImage(model)
+    elif opt['model'] == 'vgg16':
+        C, H, W = 3, 224, 224
+        model = pretrainedmodels.vgg16(pretrained=True)
+        load_image_fn = utils.LoadTransformImage(model)
+    else:
+        print('The image model is not supported')
     
-    # model.last_linear = utils.Identity()
-    # model = nn.DataParallel(model)
+    model.last_linear = utils.Identity()
+    model = nn.DataParallel(model)
 
-    # model = model.cuda()
-    # extract_image_feats(opt, model, load_image_fn)
+    model = model.cuda()
+    extract_image_feats(opt, model, load_image_fn)
 
 if __name__ == '__main__':
     main()
