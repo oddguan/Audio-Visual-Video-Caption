@@ -85,9 +85,9 @@ def split_audio(opt):
     output_dir = opt['output_dir']
     print('output directory: '+output_dir)
     for audio in os.listdir(output_dir):
-        audio = output_dir + audio
+        audio = output_dir + '/' + audio
         video_id = audio.split("/")[-1].split(".")[0]
-        dst = output_dir + video_id
+        dst = output_dir + '/' + video_id
         if os.path.exists(dst):
             shutil.rmtree(dst)
         os.mkdir(dst)
@@ -106,7 +106,7 @@ def split_audio(opt):
                 audio_info = audio_info[0:16000]
             audio_info = audio_info.astype(np.float32)
             mfcc_feats = mfcc(audio_info, sr=sample_rate)
-            print(mfcc_feats.shape)
+            #print(mfcc_feats.shape)
             output = np.concatenate((output, mfcc_feats), axis=1)
         print(output.shape)
         outfile = os.path.join(dst, 'audio.npy')
