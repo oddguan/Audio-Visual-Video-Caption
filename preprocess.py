@@ -22,8 +22,6 @@ C, H, W = 3, 224, 224
 
 def extract_frame(video, dst):
     with open(os.devnull, "w") as ffmpeg_log:
-        if not os.path.exists(dst):
-            os.mkdir(dst)
         command = 'ffmpeg -i ' + video + ' -vf fps=15 ' + '{0}/%06d.jpg'.format(dst)
         subprocess.call(command, stdout=ffmpeg_log, stderr=ffmpeg_log)
 
@@ -40,6 +38,9 @@ def extract_image_feats(opt, model, load_image_fn):
     for video in tqdm(video_list):
         video_id = video.split("/")[-1].split(".")[0]
         dst = dir_fc + '/' + video_id
+        if not os.path.exists(dst):
+            os.mkdir(dst)
+            print(video_id, 'does not have audio information')
         extract_frame(video, dst)
         image_list = sorted(glob.glob(os.path.join(dst, '*.jpg')))
         images = torch.zeros((len(image_list), C, H, W))
