@@ -23,7 +23,7 @@ C, H, W = 3, 224, 224
 def extract_frame(video, dst):
     with open(os.devnull, "w") as ffmpeg_log:
         command = 'ffmpeg -i ' + video + ' -vf fps=15 ' + '{0}/%06d.jpg'.format(dst)
-        subprocess.call(command, stdout=ffmpeg_log, stderr=ffmpeg_log)
+        subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
 
 def extract_image_feats(opt, model, load_image_fn):
     global C, H, W
