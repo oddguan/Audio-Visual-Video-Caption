@@ -7,6 +7,7 @@ import os
 import json 
 from models import MultimodalAtt
 from NLUtils import LanguageModelCriterion
+import opts
 
 def train(loader, model, crit, optimizer, lr_scheduler, opt):
     model.train()

@@ -18,7 +18,7 @@ class NaiveAttention(nn.Module):
     def forward(self, audio_hidden_state, audio_outputs, video_hidden_state, video_outputs):
         return
 
-        
+
 class TemporalAttention(nn.Module):
     def __init__(self, dim):
         super(TemporalAttention, self).__init__()
@@ -30,5 +30,5 @@ class TemporalAttention(nn.Module):
         nn.init.xavier_normal_(self.linear2.weight)
     
     def forward(self, hidden_state, encoder_output):
-
+        return
 
