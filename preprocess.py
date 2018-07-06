@@ -19,16 +19,13 @@ import pretrainedmodels
 import pretrainedmodels.utils as utils
 
 C, H, W = 3, 224, 224
-flag=True
 
 def extract_frame(video, dst):
-    global flag
     with open(os.devnull, "w") as ffmpeg_log:
-        if os.path.exists(dst):
-            command = 'ffmpeg -i ' + video + ' -vf fps=15 ' + '{0}/%06d.jpg'.format(dst)
-            subprocess.call(command, stdout=ffmpeg_log, stderr=ffmpeg_log)
-        else:
-            flag=False
+        if not os.path.exists(dst):
+            os.mkdir(dst)
+        command = 'ffmpeg -i ' + video + ' -vf fps=15 ' + '{0}/%06d.jpg'.format(dst)
+        subprocess.call(command, stdout=ffmpeg_log, stderr=ffmpeg_log)
 
 def extract_image_feats(opt, model, load_image_fn):
     global C, H, W
@@ -44,9 +41,6 @@ def extract_image_feats(opt, model, load_image_fn):
         video_id = video.split("/")[-1].split(".")[0]
         dst = dir_fc + '/' + video_id
         extract_frame(video, dst)
-        if not flag:
-            flag = True
-            continue
         image_list = sorted(glob.glob(os.path.join(dst, '*.jpg')))
         images = torch.zeros((len(image_list), C, H, W))
         for i in range(len(image_list)):
