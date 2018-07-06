@@ -1,6 +1,12 @@
 import torch.nn as nn
 from dataloader import VideoAudioDataset
 from torch.utils.data import DataLoader
+import torch.optim as optim
+from torch.nn.utils import clip_grad_value_
+import os
+import json 
+from models import MultimodalAtt
+from NLUtils import LanguageModelCriterion
 
 def train(loader, model, crit, optimizer, lr_scheduler, opt):
     model.train()
@@ -20,7 +26,14 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
                 torch.cuda.synchronize()
                 optimizer.zero_grad()
                 img_feats = image_feats[frames:(frames+15)]
-                mfcc = audio_mfcc[sec]
+                mfcc = audio_mfcc[sec] self.captions = json.load(open(opt["caption_json"]))
+        info = json.load(open(opt["info_json"]))
+        self.ix_to_word = info['ix_to_word']
+        self.word_to_ix = info['word_to_ix']
+        print('vocab size is ', len(self.ix_to_word))
+        self.splits = info['videos']
+        print('number of train videos: ', len(self.splits['train']))
+        print('number of val vid
 
                 seq_probs, _ = model(img_feats, mfcc, labels, 'train')
 
@@ -46,7 +59,33 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
 def main(opt):
     dataset = VideoAudioDataset(opt, 'train')
     loader = DataLoader(dataset, batch_size=1, shuffle=True)
-    
+    opt['vocab_size'] = dataset.get_vocab_size()
+    model = MultimodalAtt(opt['vocab_size'], opt['max_len'], opt['dim_hidden'], opt['dim_word'], dim_vid=opt['dim_vid'],
+    n_layers=opt['num_layers'], rnn_cell=opt['rnn_type'], rnn_dropout_p=opt['rnn_dropout_p'])
+    model = model.cuda()
+    crit = LanguageModelCriterion()
+    optimizer = optim.Adam(
+        model.parameters(),
+        lr=opt["learning_rate"],
+        weight_decay=opt["weight_decay"])
+    exp_lr_scheduler = optim.lr_scheduler.StepLR(
+        optimizer,
+        step_size=opt["learning_rate_decay_every"],
+        gamma=opt["learning_rate_decay_rate"])
+
+    train(dataloader, model, crit, optimizer, exp_lr_scheduler, opt)
+
+if __name__ == '__main__':
+    opt = opts.parse_opt()
+    opt = vars(opt)
+    os.environ['CUDA_VISIBLE_DEVICES'] = opt["gpu"]
+    opt_json = os.path.join(opt["checkpoint_path"], 'opt_info.json')
+    if not os.path.isdir(opt["checkpoint_path"]):
+        os.mkdir(opt["checkpoint_path"])
+    with open(opt_json, 'w') as f:
+        json.dump(opt, f)
+    print('save opt details to %s' % (opt_json))
+    main(opt)
 
 
 

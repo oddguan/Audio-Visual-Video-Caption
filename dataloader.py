@@ -33,6 +33,8 @@ class VideoAudioDataset(Dataset):
 
         image_feats = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'video.npy'))
         audio_mfcc = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy'))
+        video_length = audio_mfcc[1] / 32
+
         mask = np.zeros(self.max_len)
         label = np.zeros(self.max_len)
         captions = self.captions['video%i' % (ix)]['final_captions']
@@ -57,8 +59,15 @@ class VideoAudioDataset(Dataset):
         data['masks'] = torch.from_numpy(mask).type(torch.FloatTensor)
         data['video_ids'] = 'video%i' % (ix)
         data['gts'] = torch.from_numpy(gts).long()
+        data['video_length'] = video_length
         return data
 
     def __len__(self):
         return len(self.splits[self.mode])
+    
+    def get_vocab_size(self):
+        return len(self.ix_to_word)
+    
+    def get_vocab(self):
+        return self.ix_to_word
         
