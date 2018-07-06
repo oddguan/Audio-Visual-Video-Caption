@@ -139,7 +139,10 @@ def parse_opt():
 
     parser.add_argument(
         '--gpu', type=str, default='0', help='gpu device number')
-
+    
+    parser.add_argument(
+        '--output_dir', type=str, help='output directory of npy'
+    )
     args = parser.parse_args()
 
     return args
