@@ -66,7 +66,7 @@ def main(opt):
         step_size=opt["learning_rate_decay_every"],
         gamma=opt["learning_rate_decay_rate"])
 
-    train(dataloader, model, crit, optimizer, exp_lr_scheduler, opt)
+    train(loader, model, crit, optimizer, exp_lr_scheduler, opt)
 
 if __name__ == '__main__':
     opt = opts.parse_opt()
