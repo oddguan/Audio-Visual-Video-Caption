@@ -77,7 +77,7 @@ class MultimodalAtt(nn.Module):
                 decoder_input = decoder_input.squeeze().unsqueeze(0)
                 decoder_input = torch.cat((decoder_input, current_words.unsqueeze(1)), dim=2)
 
-                decoder_output, (decoder_hidden, decoder_cell) = self.rnn2(decoder_input, (decoder_hidden, decoder_cell))
+                decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_hidden, decoder_cell))
                 logits = self.out(decoder_output.squeeze(1))
                 logits = F.log_softmax(logits, dim=1)
                 seq_probs.append(logits.unsqueeze(1))
