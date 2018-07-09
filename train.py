@@ -27,8 +27,8 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
             for sec, frames in enumerate(range(0, video_length, 15)):
                 torch.cuda.synchronize()
                 optimizer.zero_grad()
-                img_feats = image_feats.squeeze()[frames:(frames+15)].unsqueeze(0)
-                mfcc = audio_mfcc.squeeze()[sec].unsqueeze(0)
+                img_feats = image_feats.squeeze(0)[frames:(frames+15)].unsqueeze(0)
+                mfcc = audio_mfcc.squeeze(0)[sec].unsqueeze(0)
                 seq_probs, _ = model(img_feats, mfcc, labels, 'train')
 
                 loss = crit(seq_probs, labels[:, 1:], masks[:, 1:])
