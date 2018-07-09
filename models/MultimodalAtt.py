@@ -72,7 +72,6 @@ class MultimodalAtt(nn.Module):
                 audio_encoder_output, (audio_hidden_state, audio_cell_state) = self.audio_rnn_encoder(padding_audio, 
                 (audio_hidden_state, audio_cell_state))
                 decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
-                decoder_input = torch.transpose(decoder_input, 1, 2)
                 decoder_input = self.fuse_input(decoder_input)
                 decoder_input = decoder_input.squeeze().unsqueeze(0)
                 decoder_input = torch.cat((decoder_input, current_words.unsqueeze(1)), dim=2)

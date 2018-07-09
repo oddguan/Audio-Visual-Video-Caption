@@ -70,8 +70,34 @@
 # if __name__ == '__main__':
 #     main()
 
-import torch
-import torch.nn as nn
-a = torch.zeros((30, 50))
-linear = nn.Linear(50, 40)
-print(linear(a).shape)
+import os
+import subprocess
+from tqdm import tqdm
+
+
+def vToA(video_dir, output_dir):
+    dst = output_dir
+
+    # print(video_id)
+    for video in tqdm(os.listdir(video_dir)):
+        video = video_dir + '/' + video
+        video_id = video.split("/")[-1].split(".")[0]
+        with open(os.devnull, "w") as ffmpeg_log:
+
+            command = 'ffmpeg -i ' + video + ' ' + dst + '/' + video_id + '.wav'
+            subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
+
+
+def main():
+    video_dir = 'msrvtt_2017/train-video'
+    output_dir = 'wav'
+    info_path = 'info.txt'
+    vToA(video_dir, output_dir)
+    with open(info_path, 'w') as file:
+        for wav in tqdm(os.listdir(output_dir)):
+            video_id = wav.split(".")[0]
+            file.write(video_id + '\n')
+
+
+if __name__ == '__main__':
+    main()
