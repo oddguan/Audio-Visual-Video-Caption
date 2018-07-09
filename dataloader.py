@@ -36,7 +36,7 @@ class VideoAudioDataset(Dataset):
         image_feats = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'video.npy'))
         if os.path.exists(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy')):
             audio_mfcc = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy'))
-            video_length = audio_mfcc[1] / 32
+            video_length = audio_mfcc.shape[1] / 32
         else:
             duration = VideoFileClip(self.video_dir+'/'+'video%i'%(ix)+'.mp4').duration
             video_length = round(duration)
