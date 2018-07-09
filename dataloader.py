@@ -5,6 +5,7 @@ import numpy as np
 
 import torch
 from torch.utils.data import Dataset
+from moviepy.video.io.VideoFileClip import VideoFileClip
 
 class VideoAudioDataset(Dataset):
     def __init__(self, opt, mode):
@@ -21,6 +22,7 @@ class VideoAudioDataset(Dataset):
         print('number of val videos: ', len(self.splits['val']))
         print('number of test videos: ', len(self.splits['test']))
         self.feats_dir = opt['output_dir']
+        self.video_dir = opt['video_dir']
         print('load feats from %s' % (self.feats_dir))
         self.max_len = opt['max_len']
         print('max sequence length in data is', self.max_len)
@@ -32,9 +34,14 @@ class VideoAudioDataset(Dataset):
             ix = ix + len(self.splits['train']) + len(self.splits['val'])
 
         image_feats = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'video.npy'))
-        audio_mfcc = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy'))
-        video_length = audio_mfcc[1] / 32
-
+        if os.path.exists(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy')):
+            audio_mfcc = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy'))
+            video_length = audio_mfcc[1] / 32
+        else:
+            duration = VideoFileClip(self.video_dir+'/'+'video%i'%(ix)+'.mp4').duration
+            video_length = round(duration)
+            audio_mfcc = np.zeros((20, 32*video_length))
+        self.video_length = video_length
         mask = np.zeros(self.max_len)
         label = np.zeros(self.max_len)
         captions = self.captions['video%i' % (ix)]['final_captions']
@@ -59,7 +66,6 @@ class VideoAudioDataset(Dataset):
         data['masks'] = torch.from_numpy(mask).type(torch.FloatTensor)
         data['video_ids'] = 'video%i' % (ix)
         data['gts'] = torch.from_numpy(gts).long()
-        data['video_length'] = video_length
         return data
 
     def __len__(self):
@@ -70,4 +76,7 @@ class VideoAudioDataset(Dataset):
     
     def get_vocab(self):
         return self.ix_to_word
+    
+    def get_video_length(self):
+        return self.video_length
         
