@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn 
 import torch.nn.functional as F
-from torch.nn.utils.rnn import pack_sequence
+from torch.nn.utils.rnn import pad_sequence
 from .Attentions import NaiveAttention
 
 class MultimodalAtt(nn.Module):
@@ -49,7 +49,7 @@ class MultimodalAtt(nn.Module):
         decoder_h0 = F.tanh(self.naive_fusion(decoder_h0))
         decoder_c0 = video_cell_state + audio_cell_state
 
-        decoder_input = pack_sequence([audio_encoder_output, video_encoder_output])
+        decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
         decoder_input = torch.transpose(decoder_input, 1, 3)
         decoder_input = self.fuse_input(decoder_input)
         decoder_input = torch.transpose(decoder_input, 1, 3).squeeze(1)
@@ -66,7 +66,7 @@ class MultimodalAtt(nn.Module):
                 self.decoder.flatten_parameters()
                 output1, (decoder_h0, decoder_c0) = self.rnn1(padding_frames, (decoder_h0, decoder_c0))
                 input2 = torch.cat((output1, current_words.unsqueeze(1)), dim=2)
-                output2, state2 = self.rnn2(input2, state2)
+                output2, (decoder_hidden, decoder_cell) = self.rnn2(input2, (decoder_hidden, decoder_cell))
                 logits = self.out(output2.squeeze(1))
                 logits = F.log_softmax(logits, dim=1)
                 seq_probs.append(logits.unsqueeze(1))
