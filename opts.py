@@ -143,7 +143,7 @@ def parse_opt():
     parser.add_argument(
         '--output_dir', type=str, help='output directory of npy'
     )
-    larser.add_argument(
+    parser.add_argument(
         '--video_dir', type=str, help='training videos directory'
     )
     args = parser.parse_args()
