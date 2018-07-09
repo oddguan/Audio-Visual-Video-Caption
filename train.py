@@ -18,10 +18,10 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
         iteration = 0
 
         for data in loader:
-            image_feats = data['image_feats'].cuda().squeeze()
-            audio_mfcc = data['audio_mfcc'].cuda().squeeze()
-            labels = data['labels'].cuda().squeeze()
-            masks = data['masks'].cuda().squeeze()
+            image_feats = data['image_feats'].cuda()
+            audio_mfcc = data['audio_mfcc'].cuda()
+            labels = data['labels'].cuda()
+            masks = data['masks'].cuda()
             video_length = round(loader.dataset.get_video_length())
 
             for sec, frames in enumerate(range(0, video_length, 15)):
