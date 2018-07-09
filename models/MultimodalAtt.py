@@ -44,7 +44,7 @@ class MultimodalAtt(nn.Module):
         _, n_mfcc, __ = audio_feats.shape
         padding_words = torch.zeros((batch_size, n_frames if n_frames>n_mfcc else n_mfcc, self.dim_word)).cuda()
         padding_frames = torch.zeros((batch_size, 1, self.dim_vid)).cuda()
-        padding_audio = torch.zeros((batch_size, ))
+        padding_audio = torch.zeros((batch_size, 1, self.dim_audio))
         video_encoder_output, (video_hidden_state, video_cell_state) = self.video_rnn_encoder(image_feats)
         audio_encoder_output, (audio_hidden_state, audio_cell_state) = self.audio_rnn_encoder(audio_feats)
         decoder_h0 = torch.cat((video_hidden_state, audio_hidden_state), dim=2)
