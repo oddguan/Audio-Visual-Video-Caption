@@ -31,7 +31,7 @@ class MultimodalAtt(nn.Module):
 
         self.naive_fusion = nn.Linear(self.dim_hidden*2, dim_hidden, bias=False)
         self.fuse_input = nn.Linear(2, 1)
-        self.decoder = self.rnn_cell(self.dim_hidden+self.dim_word, self.dim_hidden, n_layers, dropout=rnn_dropout_p)
+        self.decoder = self.rnn_cell(self.dim_hidden+self.dim_word, self.dim_hidden, n_layers, dropout=rnn_dropout_p, batch_first=True)
 
         self.embedding = nn.Embedding(self.dim_output, self.dim_word)
         self.out = nn.Linear(self.dim_hidden, self.dim_output)
@@ -50,9 +50,8 @@ class MultimodalAtt(nn.Module):
         decoder_c0 = video_cell_state + audio_cell_state
 
         decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
-        decoder_input = torch.transpose(decoder_input, 1, 3)
+        decoder_input = torch.transpose(decoder_input, 0, 2)
         decoder_input = self.fuse_input(decoder_input)
-        decoder_input = torch.transpose(decoder_input, 1, 3).squeeze(1)
 
         decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_h0, decoder_c0))
         seq_probs = list()
