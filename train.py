@@ -21,7 +21,7 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
             audio_mfcc = data['audio_mfcc'].cuda().squeeze()
             labels = data['labels'].cuda().squeeze()
             masks = data['masks'].cuda().squeeze()
-            video_length = data['video_length'].squeeze().item()
+            video_length = loader.dataset.get_video_length()
 
             for sec, frames in enumerate(range(0, video_length, 15)):
                 torch.cuda.synchronize()
