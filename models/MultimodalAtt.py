@@ -74,8 +74,8 @@ class MultimodalAtt(nn.Module):
                 decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
                 decoder_input = self.fuse_input(decoder_input)
                 decoder_input = decoder_input.unsqueeze(0)
-                decoder_input = torch.cat((decoder_input, current_words.unsqueeze(1)), dim=2)
-
+                decoder_input = torch.cat((decoder_input, current_words.unsqueeze(2)), dim=1)
+                decoder_input = torch.transpose(decoder_input, 1, 2)
                 decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_hidden, decoder_cell))
                 logits = self.out(decoder_output.squeeze(1))
                 logits = F.log_softmax(logits, dim=1)
