@@ -41,7 +41,8 @@ class MultimodalAtt(nn.Module):
 
     def forward(self, image_feats, audio_feats, target_variable=None, mode='train', opt={}):
         batch_size, n_frames, _ = image_feats.shape
-        padding_words = torch.zeros((batch_size, n_frames, self.dim_word))
+        _, n_mfcc, __ = audio_feats.shape
+        padding_words = torch.zeros((batch_size, n_frames if n_frames>n_mfcc else n_mfcc, self.dim_word))
         padding_frames = torch.zeros((batch_size, 1, self.dim_vid))
         video_encoder_output, (video_hidden_state, video_cell_state) = self.video_rnn_encoder(image_feats)
         audio_encoder_output, (audio_hidden_state, audio_cell_state) = self.audio_rnn_encoder(audio_feats)
@@ -52,7 +53,8 @@ class MultimodalAtt(nn.Module):
         decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
         decoder_input = torch.transpose(decoder_input, 1, 2)
         decoder_input = self.fuse_input(decoder_input)
-        decoder_input = decoder_input.suqeeze().unsqueeze(0)
+        decoder_input = decoder_input.squeeze().unsqueeze(0)
+        decoder_input = torch.cat((decoder_input, padding_words), dim=2)
 
         decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_h0, decoder_c0))
         seq_probs = list()
