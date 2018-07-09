@@ -46,7 +46,7 @@ class MultimodalAtt(nn.Module):
         video_encoder_output, (video_hidden_state, video_cell_state) = self.video_rnn_encoder(image_feats)
         audio_encoder_output, (audio_hidden_state, audio_cell_state) = self.audio_rnn_encoder(audio_feats)
         decoder_h0 = torch.cat((video_hidden_state, audio_hidden_state), dim=2)
-        decoder_h0 = F.Tanh(self.naive_fusion(decoder_h0))
+        decoder_h0 = F.tanh(self.naive_fusion(decoder_h0))
         decoder_c0 = video_cell_state + audio_cell_state
 
         decoder_input = pack_sequence([audio_encoder_output, video_encoder_output])
