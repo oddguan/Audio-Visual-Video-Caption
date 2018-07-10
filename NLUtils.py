@@ -31,12 +31,19 @@ class LanguageModelCriterion(nn.Module):
             target: shape of (N, seq_len)
             mask: shape of (N, seq_len)
         """
+        print(mask.shape)
+        print(target.shape)
         batch_size = logits.shape[0]
         target = target[:, :logits.shape[1]]
         mask = mask[:, :logits.shape[1]]
+        print(mask.shape)
+        print(target.shape)
         logits = logits.contiguous().view(-1, logits.shape[2])
         target = target.contiguous().view(-1)
         mask = mask.contiguous().view(-1)
+        print(logits.shape)
+        print(mask.shape)
+        print(target.shape)
         loss = self.loss_fn(logits, target)
         output = torch.sum(loss * mask) / batch_size
         return output
