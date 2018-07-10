@@ -17,7 +17,7 @@ class Attention(nn.Module):
         o = self.linear2(F.tanh(self.linear1(inputs)))
         e = o.view(batch_size, _len)
         alpha = F.softmax(e, dim=1)
-        context = torch.bmm(alpha.unsqueeze(1), encoder_outputs).squeeze(1)
+        context = torch.bmm(alpha.unsqueeze(1), encoder_outputs)
         return context
 
 
