@@ -88,6 +88,7 @@ class MultimodalAtt(nn.Module):
                 aud_context = self.TemporalAttention_aud(audio_hidden_state.squeeze(0), audio_encoder_output)
                 context = torch.cat((vid_context, aud_context), dim=1)
                 decoder_input = self.MultiModelAttention(decoder_h0.squeeze(0), context)
+                decoder_input = torch.cat((decoder_input, current_words.unsqueeze(1)), dim=2)
                 decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_hidden, decoder_cell))
                 logits = self.out(decoder_output.squeeze(1))
                 logits = F.log_softmax(logits, dim=1)
