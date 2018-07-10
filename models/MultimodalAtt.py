@@ -36,7 +36,7 @@ class MultimodalAtt(nn.Module):
         self.TemporalAttention_vid = Attention(dim_hidden)
         self.TemporalAttention_aud = Attention(dim_hidden)
         self.MultiModelAttention = Attention(dim_hidden)
-        self.ChildSum = ChildSum(dim_vid=dim_vid, dim_aud=dim_audio)
+        self.ChildSum = ChildSum(dim_hidden=dim_hidden)
 
         # self.naive_fusion = nn.Linear(self.dim_hidden*2, dim_hidden, bias=False)
         self.fuse_input = nn.Linear(2, 1)

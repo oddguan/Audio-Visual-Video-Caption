@@ -3,18 +3,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ChildSum(nn.Module):
-    def __init__(self, dim_vid=512, dim_aud=512):
+    def __init__(self, dim_hidden=512):
         super(ChildSum, self).__init__()
-        self.dim_vid = dim_vid
-        self.dim_aud = dim_aud
-        self.i1 = nn.Linear(dim_vid, dim_vid, bias=True)
-        self.i2 = nn.Linear(dim_aud, dim_aud, bias=True)
-        self.g1 = nn.Linear(dim_vid, dim_vid, bias=True)
-        self.g2 = nn.Linear(dim_aud, dim_aud, bias=True)
-        self.f1 = nn.Linear(dim_vid, dim_vid, bias=True)
-        self.f2 = nn.Linear(dim_aud, dim_aud, bias=True)
-        self.o1 = nn.Linear(dim_vid, dim_vid, bias=True)
-        self.o2 = nn.Linear(dim_aud, dim_aud, bias=True)
+        self.i1 = nn.Linear(dim_hidden, dim_hidden)
+        self.i2 = nn.Linear(dim_hidden, dim_hidden)
+        self.g1 = nn.Linear(dim_hidden, dim_hidden)
+        self.g2 = nn.Linear(dim_hidden, dim_hidden)
+        self.f1 = nn.Linear(dim_hidden, dim_hidden)
+        self.f2 = nn.Linear(dim_hidden, dim_hidden)
+        self.o1 = nn.Linear(dim_hidden, dim_hidden)
+        self.o2 = nn.Linear(dim_hidden, dim_hidden)
     
     def forward(self, h1, h2, c1, c2):
         i = F.sigmoid(self.i1(h1)+self.i2(h2))
