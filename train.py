@@ -61,7 +61,8 @@ def main(opt):
     optimizer = optim.Adam(
         model.parameters(),
         lr=opt["learning_rate"],
-        weight_decay=opt["weight_decay"])
+        weight_decay=opt["weight_decay"],
+        amsgrad=True)
     exp_lr_scheduler = optim.lr_scheduler.StepLR(
         optimizer,
         step_size=opt["learning_rate_decay_every"],
