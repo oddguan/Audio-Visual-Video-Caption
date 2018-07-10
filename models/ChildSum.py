@@ -27,6 +27,6 @@ class ChildSum(nn.Module):
         print(c1.shape)
         print(f_2.shape)
         print(c2.shape)
-        c = torch.bmm(i, g)+torch.bmm(f_1, c1)+torch.bmm(f_2, c2)
-        h = torch.bmm(o, F.tanh(c))
+        c = i * g + f_1 * c1 + f2 * c2
+        h = o * F.tanh(c)
         return (h, c)
