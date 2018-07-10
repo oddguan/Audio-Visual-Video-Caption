@@ -21,7 +21,12 @@ class ChildSum(nn.Module):
         f_2 = self.f2(h2)
         f = F.sigmoid(f_1+f_2)
         o = F.sigmoid(self.o1(h1)+self.o2(h2))
-
+        print(i.shape)
+        print(g.shape)
+        print(f_1.shape)
+        print(c1.shape)
+        print(f_2.shape)
+        print(c2.shape)
         c = torch.bmm(i, g)+torch.bmm(f_1, c1)+torch.bmm(f_2, c2)
         h = torch.bmm(o, F.tanh(c))
         return (h, c)
