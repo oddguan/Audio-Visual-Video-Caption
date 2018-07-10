@@ -50,7 +50,7 @@ class MultimodalAtt(nn.Module):
     def forward(self, image_feats, audio_feats, target_variable=None, mode='train', opt={}):
         batch_size, n_frames, _ = image_feats.shape
         _, n_mfcc, __ = audio_feats.shape
-        padding_words = torch.zeros((batch_size, n_frames if n_frames>n_mfcc else n_mfcc, self.dim_word)).cuda()
+        padding_words = torch.zeros((batch_size, 1, self.dim_word)).cuda()
         padding_frames = torch.zeros((batch_size, 1, self.dim_vid)).cuda()
         padding_mfccs = torch.zeros((batch_size, 1, self.dim_audio)).cuda()
         video_encoder_output, (video_hidden_state, video_cell_state) = self.video_rnn_encoder(image_feats)
