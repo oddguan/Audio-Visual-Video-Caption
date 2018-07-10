@@ -27,6 +27,6 @@ class ChildSum(nn.Module):
         print(c1.shape)
         print(f_2.shape)
         print(c2.shape)
-        c = i * g + f_1 * c1 + f2 * c2
+        c = i * g + f_1 * c1 + f_2 * c2
         h = o * F.tanh(c)
         return (h, c)
