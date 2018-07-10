@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 class Attention(nn.Module):
     def __init__(self, dim):
-        super(TemporalAttention, self).__init__()
+        super(Attention, self).__init__()
         self.linear1 = nn.Linear(dim*2, dim)
         self.linear2 = nn.Linear(dim, 1, bias=False)
     
