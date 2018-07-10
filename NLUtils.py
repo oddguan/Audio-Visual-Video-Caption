@@ -23,27 +23,20 @@ def decode_sequence(ix_to_word, seq):
 class LanguageModelCriterion(nn.Module):
     def __init__(self):
         super(LanguageModelCriterion, self).__init__()
-        self.loss_fn = nn.NLLLoss(reduce=False)
+        self.loss_fn = nn.CrossEntropyLoss()
 
-    def forward(self, logits, target, mask):
+    def forward(self, inputs, target, mask):
         """
-            logits: shape of (N, seq_len, vocab_size)
+            inputs: shape of (N, seq_len, vocab_size)
             target: shape of (N, seq_len)
             mask: shape of (N, seq_len)
         """
-        print(mask.shape)
-        print(target.shape)
-        batch_size = logits.shape[0]
-        target = target[:, :logits.shape[1]]
-        mask = mask[:, :logits.shape[1]]
-        print(mask.shape)
-        print(target.shape)
-        logits = logits.contiguous().view(-1, logits.shape[2])
+        batch_size = inputs.shape[0]
+        target = target[:, :inputs.shape[1]]
+        mask = mask[:, :inputs.shape[1]]
+        inputs = inputs.contiguous().view(-1, inputs.shape[2])
         target = target.contiguous().view(-1)
         mask = mask.contiguous().view(-1)
-        print(logits.shape)
-        print(mask.shape)
-        print(target.shape)
-        loss = self.loss_fn(logits, target)
+        loss = self.loss_fn(inputs, target)
         output = torch.sum(loss * mask) / batch_size
         return output
