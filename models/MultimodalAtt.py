@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn 
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
-from Attention import Attention
-from ChildSum import ChildSum
+from .Attention import Attention
+from .ChildSum import ChildSum
 
 class MultimodalAtt(nn.Module):
 
