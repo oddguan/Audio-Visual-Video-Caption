@@ -41,7 +41,7 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
 
                 print("iter %d (epoch %d), train_loss = %.6f" % (iteration, epoch, train_loss))
 
-                if epoch % opt["save_checkpoint_every"] == 0:
+                if epoch % opt["save_checkpoint_every"] == 0 and not epoch == 0:
                     model_path = os.path.join(opt["checkpoint_path"], 'model_%d.pth' % (epoch))
                     model_info_path = os.path.join(opt["checkpoint_path"], 'model_score.txt')
                     torch.save(model.state_dict(), model_path)
