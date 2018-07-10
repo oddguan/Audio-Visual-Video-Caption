@@ -2,12 +2,14 @@ import torch
 import torch.nn as nn 
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
-from .Attentions import NaiveAttention
+from .Attention import Attention
+from .ChildSum import ChildSum
 
 class MultimodalAtt(nn.Module):
 
-    def __init__(self, vocab_size, max_len, dim_hidden, dim_word, dim_vid=2048, dim_audio=32, 
-    sos_id=1, eos_id=0, n_layers=1, rnn_cell='lstm', rnn_dropout_p=0.2, decoder_input_shape=20):
+    def __init__(self, vocab_size, max_len, dim_hidden, dim_word, dim_vid=2048, 
+    dim_audio=32, sos_id=1, eos_id=0, n_layers=1, rnn_cell='lstm', 
+    rnn_dropout_p=0.2, decoder_input_shape=20):
         super(MultimodalAtt, self).__init__()
 
         if rnn_cell.lower() == 'lstm':
@@ -26,17 +28,23 @@ class MultimodalAtt(nn.Module):
         self.eos_id = eos_id
         self.decoder_input_shape = 20
 
-        self.video_rnn_encoder = self.rnn_cell(self.dim_vid, self.dim_hidden, self.n_layers, dropout=rnn_dropout_p, batch_first=True)
-        self.audio_rnn_encoder = self.rnn_cell(self.dim_audio, self.dim_hidden, self.n_layers, dropout=rnn_dropout_p, batch_first=True)
+        self.video_rnn_encoder = self.rnn_cell(self.dim_vid, self.dim_hidden, 
+        self.n_layers, dropout=rnn_dropout_p, batch_first=True)
+        self.audio_rnn_encoder = self.rnn_cell(self.dim_audio, self.dim_hidden, 
+        self.n_layers, dropout=rnn_dropout_p, batch_first=True)
 
-        self.naive_fusion = nn.Linear(self.dim_hidden*2, dim_hidden, bias=False)
+        self.TemporalAttention_vid = Attention(dim_hidden)
+        self.TemporalAttention_aud = Attention(dim_hidden)
+        self.MultiModelAttention = Attention(dim_hidden)
+        self.ChildSum = ChildSum(dim_vid=dim_vid, dim_aud=dim_audio)
+
+        # self.naive_fusion = nn.Linear(self.dim_hidden*2, dim_hidden, bias=False)
         self.fuse_input = nn.Linear(2, 1)
-        self.decoder = self.rnn_cell(self.dim_hidden+self.dim_word, self.dim_hidden, n_layers, dropout=rnn_dropout_p, batch_first=True)
+        self.decoder = self.rnn_cell(self.dim_hidden+self.dim_word, self.dim_hidden, 
+        n_layers, dropout=rnn_dropout_p, batch_first=True)
 
         self.embedding = nn.Embedding(self.dim_output, self.dim_word)
         self.out = nn.Linear(self.dim_hidden, self.dim_output)
-
-
 
 
     def forward(self, image_feats, audio_feats, target_variable=None, mode='train', opt={}):
@@ -44,17 +52,20 @@ class MultimodalAtt(nn.Module):
         _, n_mfcc, __ = audio_feats.shape
         padding_words = torch.zeros((batch_size, n_frames if n_frames>n_mfcc else n_mfcc, self.dim_word)).cuda()
         padding_frames = torch.zeros((batch_size, 1, self.dim_vid)).cuda()
-        padding_audio = torch.zeros((batch_size, 1, self.dim_audio)).cuda()
+        padding_mfccs = torch.zeros((batch_size, 1, self.dim_audio)).cuda()
         video_encoder_output, (video_hidden_state, video_cell_state) = self.video_rnn_encoder(image_feats)
         audio_encoder_output, (audio_hidden_state, audio_cell_state) = self.audio_rnn_encoder(audio_feats)
-        decoder_h0 = torch.cat((video_hidden_state, audio_hidden_state), dim=2)
-        decoder_h0 = F.tanh(self.naive_fusion(decoder_h0))
-        decoder_c0 = video_cell_state + audio_cell_state
-
-        decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
-        decoder_input = torch.transpose(decoder_input, 1, 2)
-        decoder_input = self.fuse_input(decoder_input)
-        decoder_input = decoder_input.squeeze().unsqueeze(0)
+        decoder_h0, decoder_c0 = ChildSum(video_hidden_state, audio_hidden_state, 
+        video_cell_state, audio_cell_state)
+        vid_context = self.TemporalAttention_vid(video_hidden_state.squeeze(0), video_encoder_output)
+        aud_context = self.TemporalAttention_aud(audio_hidden_state.squeeze(0), audio_encoder_output)
+        context = torch.cat((vid_context, aud_context), dim=1)
+        decoder_input = self.MultiModelAttention(decoder_h0.squeeze(0), context)
+        
+        # decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
+        # decoder_input = torch.transpose(decoder_input, 1, 2)
+        # decoder_input = self.fuse_input(decoder_input)
+        # decoder_input = decoder_input.squeeze().unsqueeze(0)
         decoder_input = torch.cat((decoder_input, padding_words), dim=2)
 
         decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_h0, decoder_c0))
@@ -69,13 +80,12 @@ class MultimodalAtt(nn.Module):
                 self.decoder.flatten_parameters()
                 video_encoder_output, (video_hidden_state, video_cell_state) = self.video_rnn_encoder(padding_frames, 
                 (video_hidden_state, video_cell_state))
-                audio_encoder_output, (audio_hidden_state, audio_cell_state) = self.audio_rnn_encoder(padding_audio, 
+                audio_encoder_output, (audio_hidden_state, audio_cell_state) = self.audio_rnn_encoder(padding_mfccs, 
                 (audio_hidden_state, audio_cell_state))
-                decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
-                decoder_input = self.fuse_input(decoder_input)
-                decoder_input = decoder_input.unsqueeze(0)
-                decoder_input = torch.cat((decoder_input, current_words.unsqueeze(2)), dim=1)
-                decoder_input = torch.transpose(decoder_input, 1, 2)
+                vid_context = self.TemporalAttention_vid(video_hidden_state.squeeze(0), video_encoder_output)
+                aud_context = self.TemporalAttention_aud(audio_hidden_state.squeeze(0), audio_encoder_output)
+                context = torch.cat((vid_context, aud_context), dim=1)
+                decoder_input = self.MultiModelAttention(decoder_h0.squeeze(0), context)
                 decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_hidden, decoder_cell))
                 logits = self.out(decoder_output.squeeze(1))
                 logits = F.log_softmax(logits, dim=1)
