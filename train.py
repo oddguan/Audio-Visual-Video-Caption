@@ -14,6 +14,7 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
     model.train()
     model = nn.DataParallel(model)
     for epoch in range(opt['epochs']):
+        save_flag=True
         lr_scheduler.step()
         iteration = 0
 
@@ -41,13 +42,14 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
 
                 print("iter %d (epoch %d), train_loss = %.6f" % (iteration, epoch, train_loss))
 
-                if epoch % opt["save_checkpoint_every"] == 0 and not epoch == 0:
+                if epoch % opt["save_checkpoint_every"] == 0 and not epoch == 0 and save_flag:
                     model_path = os.path.join(opt["checkpoint_path"], 'model_%d.pth' % (epoch))
                     model_info_path = os.path.join(opt["checkpoint_path"], 'model_score.txt')
                     torch.save(model.state_dict(), model_path)
                     print("model saved to %s" % (model_path))
                     with open(model_info_path, 'a') as f:
                         f.write("model_%d, loss: %.6f\n" % (epoch, train_loss))
+                    save_flag=False
 
 
 def main(opt):
