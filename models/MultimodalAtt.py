@@ -63,7 +63,6 @@ class MultimodalAtt(nn.Module):
         audio_encoder_output)
         context = torch.cat((vid_context, aud_context), dim=1)
         decoder_input = self.MultiModelAttention(decoder_h0.squeeze(0), context)
-        print(decoder_input.shape)
         # decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
         # decoder_input = torch.transpose(decoder_input, 1, 2)
         # decoder_input = self.fuse_input(decoder_input)
