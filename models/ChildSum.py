@@ -19,7 +19,7 @@ class ChildSum(nn.Module):
         g = F.tanh(self.g1(h1)+self.g2(h2))
         f_1 = self.f1(h1)
         f_2 = self.f2(h2)
-        f = F.sigmoid(f_1, f_2)
+        f = F.sigmoid(f_1+f_2)
         o = F.sigmoid(self.o1(h1)+self.o2(h2))
 
         c = torch.bmm(i, g)+torch.bmm(f_1, c1)+torch.bmm(f_2, c2)
