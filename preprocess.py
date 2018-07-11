@@ -115,7 +115,7 @@ def split_audio(opt):
             output = np.concatenate((output, mfcc_feats), axis=1)
         #print(output.shape)
         outfile = os.path.join(dst, 'audio.npy')
-        np.save(outfile.T, output)
+        np.save(outfile, output.T)
         for file in os.listdir(dst):
             if file.endswith('.wav'):
                 os.remove(os.path.join(dst, file))

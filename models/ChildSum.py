@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ChildSum(nn.Module):
-    def __init__(self, dim_hidden=512):
+    def __init__(self, dim_hidden):
         super(ChildSum, self).__init__()
         self.i1 = nn.Linear(dim_hidden, dim_hidden)
         self.i2 = nn.Linear(dim_hidden, dim_hidden)
