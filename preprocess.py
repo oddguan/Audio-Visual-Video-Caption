@@ -22,7 +22,8 @@ C, H, W = 3, 224, 224
 
 def extract_frame(video, dst):
     with open(os.devnull, "w") as ffmpeg_log:
-        command = 'ffmpeg -i ' + video + ' -vf fps=15 ' + '{0}/%06d.jpg'.format(dst)
+        command = 'ffmpeg -i ' + video + ' -vf scale=400:300 ' 
+        +'-qscale:v 2 '+ '{0}/%06d.jpg'.format(dst)
         subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
 
 def extract_image_feats(opt, model, load_image_fn):
@@ -43,6 +44,9 @@ def extract_image_feats(opt, model, load_image_fn):
             print(video_id, 'does not have audio information')
         extract_frame(video, dst)
         image_list = sorted(glob.glob(os.path.join(dst, '*.jpg')))
+        samples = np.round(np.linspace(
+            0, len(image_list) - 1, opt['n_frame_steps']))
+        image_list = [image_list[int(sample)] for sample in samples]
         images = torch.zeros((len(image_list), C, H, W))
         for i in range(len(image_list)):
             img = load_image_fn(image_list[i])
@@ -52,7 +56,6 @@ def extract_image_feats(opt, model, load_image_fn):
             image_feats = model(images.cuda().squeeze())
         image_feats = image_feats.cpu().numpy()
         outfile = os.path.join(dst, 'video.npy')
-        print(outfile)
         np.save(outfile, image_feats)
         for file in os.listdir(dst):
             if file.endswith('.jpg'):
@@ -110,7 +113,7 @@ def split_audio(opt):
             mfcc_feats = mfcc(audio_info, sr=sample_rate)
             #print(mfcc_feats.shape)
             output = np.concatenate((output, mfcc_feats), axis=1)
-        print(output.shape)
+        #print(output.shape)
         outfile = os.path.join(dst, 'audio.npy')
         np.save(outfile, output)
         for file in os.listdir(dst):
@@ -134,6 +137,8 @@ def main():
     help='The pretrained model to use for extracting image features, default to resnet152')
     parser.add_argument('--gpu', type=str, default='0', 
     help='The CUDA_VISIBLE_DEVICES argument, default to 0')
+    parser.add_argument('--n_frame_steps', type=int, default=80,
+    help='The number of frames to extract from a single video')
     opt = parser.parse_args()
     opt=vars(opt)
 
