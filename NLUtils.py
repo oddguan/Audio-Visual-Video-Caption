@@ -23,7 +23,7 @@ def decode_sequence(ix_to_word, seq):
 class LanguageModelCriterion(nn.Module):
     def __init__(self):
         super(LanguageModelCriterion, self).__init__()
-        self.loss_fn = nn.CrossEntropyLoss()
+        self.loss_fn = nn.CrossEntropyLoss(reduce=False)
 
     def forward(self, inputs, target, mask):
         """
