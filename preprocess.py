@@ -22,8 +22,7 @@ C, H, W = 3, 224, 224
 
 def extract_frame(video, dst):
     with open(os.devnull, "w") as ffmpeg_log:
-        command = 'ffmpeg -i ' + video + ' -vf scale=400:300 ' 
-        +'-qscale:v 2 '+ '{0}/%06d.jpg'.format(dst)
+        command = 'ffmpeg -i ' + video + ' -vf scale=400:300 ' + '-qscale:v 2 '+ '{0}/%06d.jpg'.format(dst)
         subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
 
 def extract_image_feats(opt, model, load_image_fn):
@@ -142,8 +141,8 @@ def main():
     opt = parser.parse_args()
     opt=vars(opt)
 
-    vToA(opt)
-    split_audio(opt)
+    #vToA(opt)
+    #split_audio(opt)
     print('cleaning up original .wav files...')
     dir = opt['output_dir']
     dir = os.listdir(dir)

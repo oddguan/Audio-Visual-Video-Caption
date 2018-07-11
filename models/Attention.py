@@ -10,8 +10,13 @@ class Attention(nn.Module):
         self.linear2 = nn.Linear(dim, 1, bias=False)
     
     def forward(self, hidden_state, encoder_outputs):
+        '''
+            hidden_state.shape = 1, batch_size, dim_hidden
+            encoder_output.shape = batch_size, length, dim_hidden
+        '''
         batch_size, _len, _ = encoder_outputs.shape
-        hidden_state = hidden_state.unsqueeze(1).repeat(1, _len, 1)
+        hidden_state = hidden_state.unsqueeze(1).repeat(_len, 1, 1)
+        hidden_state = torch.transpose(hiddenstate, 0, 1)
         inputs = torch.cat((encoder_outputs, hidden_state),
                            2).view(-1, self.dim * 2)
         o = self.linear2(F.tanh(self.linear1(inputs)))
