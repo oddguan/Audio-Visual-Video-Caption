@@ -40,7 +40,6 @@ class VideoAudioDataset(Dataset):
             audio_mfcc = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy'))
         else:
             audio_mfcc = np.zeros((32*self.max_video_duration, 20))
-        self.video_length = video_length
         mask = np.zeros(self.max_len)
         label = np.zeros(self.max_len)
         captions = self.captions['video%i' % (ix)]['final_captions']

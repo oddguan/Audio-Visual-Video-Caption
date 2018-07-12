@@ -161,7 +161,7 @@ def main():
         load_image_fn = utils.LoadTransformImage(model)
     elif opt['model'] == 'vgg16':
         C, H, W = 3, 224, 224
-        model = pretrainedmodels.vgg16(pretrained=True)
+        model = pretrainedmodels.vgg16(pretrained='imagenet')
         load_image_fn = utils.LoadTransformImage(model)
     else:
         print('The image model is not supported')
