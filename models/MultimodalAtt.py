@@ -49,17 +49,25 @@ class MultimodalAtt(nn.Module):
         # padding_mfccs = torch.zeros((batch_size, 1, self.dim_audio)).cuda()
         video_encoder_output, (video_hidden_state, video_cell_state) = self.video_rnn_encoder(image_feats)
         audio_encoder_output, (audio_hidden_state, audio_cell_state) = self.audio_rnn_encoder(audio_feats)
-        decoder_hidden, decoder_cell = self.ChildSum(video_hidden_state, audio_hidden_state, 
-        video_cell_state, audio_cell_state)
-        vid_context = self.TemporalAttention_vid(decoder_hidden, video_encoder_output)
-        aud_context = self.TemporalAttention_aud(decoder_hidden, audio_encoder_output)
+        if opt['child_sum']:
+            decoder_hidden, decoder_cell = self.ChildSum(video_hidden_state, audio_hidden_state, 
+            video_cell_state, audio_cell_state)
+        else:
+            decoder_hidden = video_hidden_state + audio_hidden_state
+            decoder_cell = video_cell_state + audio_cell_state
+        
+        if opt['temporal_attention']:
+            vid_context = self.TemporalAttention_vid(decoder_hidden, video_encoder_output)
+            aud_context = self.TemporalAttention_aud(decoder_hidden, audio_encoder_output)    
+        else:
+            vid_context = video_encoder_output.mean(1).unsqueeze(1)
+            aud_context = audio_encoder_output.mean(1).unsqueeze(1)
+        
         context = torch.cat((vid_context, aud_context), dim=1)
-        decoder_input = self.MultiModelAttention(decoder_hidden, context)
-        # decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
-        # decoder_input = torch.transpose(decoder_input, 1, 2)
-        # decoder_input = self.fuse_input(decoder_input)
-        # decoder_input = decoder_input.squeeze().unsqueeze(0)
-
+        if opt['multimodel_attention']:
+            decoder_input = self.MultiModelAttention(decoder_hidden, context)
+        else:
+            decoder_input = context.mean(1).unsqueeze(1)
 
         seq_probs = list()
         seq_preds = list()
@@ -73,10 +81,18 @@ class MultimodalAtt(nn.Module):
                 decoder_input = torch.cat((decoder_input, current_words.unsqueeze(1)), dim=2)
                 decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_hidden, decoder_cell))
                 
-                vid_context = self.TemporalAttention_vid(decoder_hidden, video_encoder_output)
-                aud_context = self.TemporalAttention_aud(decoder_hidden, audio_encoder_output)
+                if opt['temporal_attention']:
+                    vid_context = self.TemporalAttention_vid(decoder_hidden, video_encoder_output)
+                    aud_context = self.TemporalAttention_aud(decoder_hidden, audio_encoder_output)    
+                else:
+                    vid_context = video_encoder_output.mean(1).unsqueeze(1)
+                    aud_context = audio_encoder_output.mean(1).unsqueeze(1)
+        
                 context = torch.cat((vid_context, aud_context), dim=1)
-                decoder_input = self.MultiModelAttention(decoder_hidden, context)
+                if opt['multimodel_attention']:
+                    decoder_input = self.MultiModelAttention(decoder_hidden, context)
+                else:
+                    decoder_input = context.mean(1).unsqueeze(1)
                 
                 output = self.out(decoder_output)
                 seq_probs.append(output)
