@@ -61,7 +61,7 @@ class VideoAudioDataset(Dataset):
         non_zero = (label == 0).nonzero()
         mask[:int(non_zero[0][0])+1]=1
 
-
+        print(audio_mfcc.shape)
         data = dict()
         data['image_feats'] = torch.from_numpy(image_feats).type(torch.FloatTensor)
         data['audio_mfcc'] = torch.from_numpy(audio_mfcc).type(torch.FloatTensor)
