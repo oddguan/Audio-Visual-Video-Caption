@@ -21,7 +21,6 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
         for data in loader:
             image_feats = data['image_feats'].cuda()
             audio_mfcc = data['audio_mfcc'].cuda()
-            print(audio_mfcc.shape)
             labels = data['labels'].cuda()
             masks = data['masks'].cuda()
 
