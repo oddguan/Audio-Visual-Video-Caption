@@ -27,7 +27,7 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
             torch.cuda.synchronize()
             optimizer.zero_grad()
             
-            seq_probs, _ = model(image_feats, audio_mfcc, labels, 'train')
+            seq_probs, _ = model(image_feats, audio_mfcc, labels, 'train', opt=opt)
 
             loss = crit(seq_probs, labels[:, 1:], masks[:, 1:])
             loss.backward()
