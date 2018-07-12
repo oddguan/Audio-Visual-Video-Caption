@@ -39,6 +39,7 @@ class VideoAudioDataset(Dataset):
         if os.path.exists(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy')):
             audio_mfcc = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy'))
             video_length = audio_mfcc.shape[0] / 32
+            print(video_length)
             audio_mfcc = np.pad(audio_mfcc, ((0, self.max_video_duration-round(video_length)),(0,0)), 'constant')
         else:
             duration = VideoFileClip(self.video_dir+'/'+'video%i'%(ix)+'.mp4').duration
@@ -61,6 +62,7 @@ class VideoAudioDataset(Dataset):
         non_zero = (label == 0).nonzero()
         mask[:int(non_zero[0][0])+1]=1
 
+        print(audio_mfcc.shape)
         data = dict()
         data['image_feats'] = torch.from_numpy(image_feats).type(torch.FloatTensor)
         data['audio_mfcc'] = torch.from_numpy(audio_mfcc).type(torch.FloatTensor)
