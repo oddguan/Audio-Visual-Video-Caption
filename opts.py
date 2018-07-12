@@ -151,7 +151,7 @@ def parse_opt():
         , help='The maximum video duration of the training dataset'
     )
     parser.add_argument(
-        '--childsum', type=bool, default=False,
+        '--child_sum', type=bool, default=False,
         help='whether to use the childsum unit to fuse the hidden state'
     )
     parser.add_argument(
