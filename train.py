@@ -21,35 +21,33 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
         for data in loader:
             image_feats = data['image_feats'].cuda()
             audio_mfcc = data['audio_mfcc'].cuda()
+            print(audio_mfcc.shape)
             labels = data['labels'].cuda()
             masks = data['masks'].cuda()
-            video_length = round(loader.dataset.get_video_length())
 
-            for sec, frames in enumerate(range(0, video_length, 15)):
-                torch.cuda.synchronize()
-                optimizer.zero_grad()
-                img_feats = image_feats.squeeze(0)[frames:(frames+15)].unsqueeze(0)
-                mfcc = audio_mfcc.squeeze(0)[:,sec*32:sec*32+32].unsqueeze(0)
-                seq_probs, _ = model(img_feats, mfcc, labels, 'train')
+            torch.cuda.synchronize()
+            optimizer.zero_grad()
+            
+            seq_probs, _ = model(image_feats, audio_mfcc, labels, 'train')
 
-                loss = crit(seq_probs, labels[:, 1:], masks[:, 1:])
-                loss.backward()
-                clip_grad_value_(model.parameters(), opt['grad_clip'])
-                optimizer.step()
-                train_loss = loss.item()
-                torch.cuda.synchronize()
-                iteration += 1
+            loss = crit(seq_probs, labels[:, 1:], masks[:, 1:])
+            loss.backward()
+            clip_grad_value_(model.parameters(), opt['grad_clip'])
+            optimizer.step()
+            train_loss = loss.item()
+            torch.cuda.synchronize()
+            iteration += 1
 
-                print("iter %d (epoch %d), train_loss = %.6f" % (iteration, epoch, train_loss))
+            print("iter %d (epoch %d), train_loss = %.6f" % (iteration, epoch, train_loss))
 
-                if epoch % opt["save_checkpoint_every"] == 0 and not epoch == 0 and save_flag:
-                    model_path = os.path.join(opt["checkpoint_path"], 'model_%d.pth' % (epoch))
-                    model_info_path = os.path.join(opt["checkpoint_path"], 'model_score.txt')
-                    torch.save(model.state_dict(), model_path)
-                    print("model saved to %s" % (model_path))
-                    with open(model_info_path, 'a') as f:
-                        f.write("model_%d, loss: %.6f\n" % (epoch, train_loss))
-                    save_flag=False
+            if epoch % opt["save_checkpoint_every"] == 0 and not epoch == 0 and save_flag:
+                model_path = os.path.join(opt["checkpoint_path"], 'model_%d.pth' % (epoch))
+                model_info_path = os.path.join(opt["checkpoint_path"], 'model_score.txt')
+                torch.save(model.state_dict(), model_path)
+                print("model saved to %s" % (model_path))
+                with open(model_info_path, 'a') as f:
+                    f.write("model_%d, loss: %.6f\n" % (epoch, train_loss))
+                save_flag=False
 
 
 def main(opt):
