@@ -40,7 +40,7 @@ class VideoAudioDataset(Dataset):
         else:
             duration = VideoFileClip(self.video_dir+'/'+'video%i'%(ix)+'.mp4').duration
             video_length = round(duration)
-            audio_mfcc = np.zeros((20, 32*video_length))
+            audio_mfcc = np.zeros((32*video_length, 20))
         self.video_length = video_length
         mask = np.zeros(self.max_len)
         label = np.zeros(self.max_len)
