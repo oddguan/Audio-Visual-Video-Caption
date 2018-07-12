@@ -146,6 +146,10 @@ def parse_opt():
     parser.add_argument(
         '--video_dir', type=str, help='training videos directory'
     )
+    parser.add_argument(
+        '--max_video_duration', type=int, default=35
+        , help='The maximum video duration of the training dataset'
+    )
     args = parser.parse_args()
 
     return args

@@ -27,6 +27,8 @@ class VideoAudioDataset(Dataset):
         self.max_len = opt['max_len']
         print('max sequence length in data is', self.max_len)
 
+        self.max_video_duration = opt['max_video_duration']
+
     def __getitem__(self, ix):
         if self.mode == 'val':
             ix += len(self.splits['train'])
@@ -37,10 +39,11 @@ class VideoAudioDataset(Dataset):
         if os.path.exists(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy')):
             audio_mfcc = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy'))
             video_length = audio_mfcc.shape[1] / 32
+            audio_mfcc = np.pad(audio_mfcc, ((0, self.max_video_duration-video_length),), 'constant')
         else:
             duration = VideoFileClip(self.video_dir+'/'+'video%i'%(ix)+'.mp4').duration
             video_length = round(duration)
-            audio_mfcc = np.zeros((32*video_length, 20))
+            audio_mfcc = np.zeros((32*max_video_duration, 20))
         self.video_length = video_length
         mask = np.zeros(self.max_len)
         label = np.zeros(self.max_len)
