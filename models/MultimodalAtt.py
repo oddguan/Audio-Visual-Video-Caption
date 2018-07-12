@@ -8,8 +8,8 @@ from .ChildSum import ChildSum
 class MultimodalAtt(nn.Module):
 
     def __init__(self, vocab_size, max_len, dim_hidden, dim_word, dim_vid=2048, 
-    dim_audio=32, sos_id=1, eos_id=0, n_layers=1, rnn_cell='lstm', 
-    rnn_dropout_p=0.2, decoder_input_shape=20):
+    dim_audio=20, sos_id=1, eos_id=0, n_layers=1, rnn_cell='lstm', 
+    rnn_dropout_p=0.2):
         super(MultimodalAtt, self).__init__()
 
         self.rnn_cell = nn.LSTM
@@ -23,7 +23,6 @@ class MultimodalAtt(nn.Module):
         self.dim_audio = dim_audio
         self.sos_id = sos_id
         self.eos_id = eos_id
-        self.decoder_input_shape = 20
 
         self.video_rnn_encoder = self.rnn_cell(self.dim_vid, self.dim_hidden, 
         self.n_layers, dropout=rnn_dropout_p, batch_first=True)
@@ -33,10 +32,9 @@ class MultimodalAtt(nn.Module):
         self.TemporalAttention_vid = Attention(dim_hidden)
         self.TemporalAttention_aud = Attention(dim_hidden)
         self.MultiModelAttention = Attention(dim_hidden)
-        self.ChildSum = ChildSum(dim_hidden=dim_hidden)
+        self.ChildSum = ChildSum(dim_hidden)
 
         # self.naive_fusion = nn.Linear(self.dim_hidden*2, dim_hidden, bias=False)
-        self.fuse_input = nn.Linear(2, 1)
         self.decoder = self.rnn_cell(self.dim_word+self.dim_hidden, self.dim_hidden, 
         n_layers, dropout=rnn_dropout_p, batch_first=True)
 
@@ -46,17 +44,17 @@ class MultimodalAtt(nn.Module):
 
     def forward(self, image_feats, audio_feats, target_variable=None, mode='train', opt={}):
         batch_size, n_frames, _ = image_feats.shape
-        _, n_mfcc, __ = audio_feats.shape
-        padding_frames = torch.zeros((batch_size, 1, self.dim_vid)).cuda()
-        padding_mfccs = torch.zeros((batch_size, 1, self.dim_audio)).cuda()
+        _, __ , n_mfcc = audio_feats.shape
+        # padding_frames = torch.zeros((batch_size, 1, self.dim_vid)).cuda()
+        # padding_mfccs = torch.zeros((batch_size, 1, self.dim_audio)).cuda()
         video_encoder_output, (video_hidden_state, video_cell_state) = self.video_rnn_encoder(image_feats)
         audio_encoder_output, (audio_hidden_state, audio_cell_state) = self.audio_rnn_encoder(audio_feats)
         decoder_hidden, decoder_cell = self.ChildSum(video_hidden_state, audio_hidden_state, 
         video_cell_state, audio_cell_state)
-        vid_context = self.TemporalAttention_vid(decoder_hidden.squeeze(1), video_encoder_output)
-        aud_context = self.TemporalAttention_aud(decoder_hidden.squeeze(1), audio_encoder_output)
+        vid_context = self.TemporalAttention_vid(decoder_hidden, video_encoder_output)
+        aud_context = self.TemporalAttention_aud(decoder_hidden, audio_encoder_output)
         context = torch.cat((vid_context, aud_context), dim=1)
-        decoder_input = self.MultiModelAttention(decoder_hidden.squeeze(1), context)
+        decoder_input = self.MultiModelAttention(decoder_hidden, context)
         # decoder_input = pad_sequence([audio_encoder_output.squeeze(), video_encoder_output.squeeze()])
         # decoder_input = torch.transpose(decoder_input, 1, 2)
         # decoder_input = self.fuse_input(decoder_input)
@@ -75,13 +73,13 @@ class MultimodalAtt(nn.Module):
                 decoder_input = torch.cat((decoder_input, current_words.unsqueeze(1)), dim=2)
                 decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_hidden, decoder_cell))
                 
-                vid_context = self.TemporalAttention_vid(decoder_hidden.squeeze(1), video_encoder_output)
-                aud_context = self.TemporalAttention_aud(decoder_hidden.squeeze(1), audio_encoder_output)
+                vid_context = self.TemporalAttention_vid(decoder_hidden, video_encoder_output)
+                aud_context = self.TemporalAttention_aud(decoder_hidden, audio_encoder_output)
                 context = torch.cat((vid_context, aud_context), dim=1)
-                decoder_input = self.MultiModelAttention(decoder_hidden.squeeze(1), context)
+                decoder_input = self.MultiModelAttention(decoder_hidden, context)
                 
-                output = self.out(decoder_output.squeeze(1))
-                seq_probs.append(output.unsqueeze(1))
+                output = self.out(decoder_output)
+                seq_probs.append(output)
             seq_probs = torch.cat(seq_probs, 1)
 
         # else:

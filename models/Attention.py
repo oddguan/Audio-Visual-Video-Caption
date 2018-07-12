@@ -15,7 +15,7 @@ class Attention(nn.Module):
             encoder_output.shape = batch_size, length, dim_hidden
         '''
         batch_size, _len, _ = encoder_outputs.shape
-        hidden_state = hidden_state.unsqueeze(1).repeat(_len, 1, 1)
+        hidden_state = hidden_state.repeat(_len, 1, 1)
         hidden_state = torch.transpose(hiddenstate, 0, 1)
         inputs = torch.cat((encoder_outputs, hidden_state),
                            2).view(-1, self.dim * 2)
