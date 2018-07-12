@@ -39,11 +39,11 @@ class VideoAudioDataset(Dataset):
         if os.path.exists(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy')):
             audio_mfcc = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy'))
             video_length = audio_mfcc.shape[1] / 32
-            audio_mfcc = np.pad(audio_mfcc, ((0, self.max_video_duration-video_length),), 'constant')
+            audio_mfcc = np.pad(audio_mfcc, ((0, self.max_video_duration-round(video_length)),(0,0)), 'constant')
         else:
             duration = VideoFileClip(self.video_dir+'/'+'video%i'%(ix)+'.mp4').duration
             video_length = round(duration)
-            audio_mfcc = np.zeros((32*max_video_duration, 20))
+            audio_mfcc = np.zeros((32*self.max_video_duration, 20))
         self.video_length = video_length
         mask = np.zeros(self.max_len)
         label = np.zeros(self.max_len)
