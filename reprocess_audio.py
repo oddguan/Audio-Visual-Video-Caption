@@ -115,7 +115,7 @@ def split_audio(opt):
     output_dir = opt['output_dir']
     print('output directory: '+output_dir)
     for audio in tqdm(os.listdir(output_dir)):
-        if os.isdir(audio):
+        if os.path.isdir(audio):
             continue
         audio = output_dir + '/' + audio
         video_id = audio.split("/")[-1].split(".")[0]
@@ -173,7 +173,7 @@ def main():
     opt = parser.parse_args()
     opt=vars(opt)
 
-    vToA(opt)
+    #vToA(opt)
     split_audio(opt)
 
 if __name__ == '__main__':
