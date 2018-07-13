@@ -36,7 +36,6 @@ class VideoAudioDataset(Dataset):
             ix = ix + len(self.splits['train']) + len(self.splits['val'])
 
         image_feats = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'video.npy'))
-        print(image_feats.shape)
         if os.path.exists(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy')):
             audio_mfcc = np.load(os.path.join(self.feats_dir+'video%i'%(ix), 'audio.npy'))
         else:
