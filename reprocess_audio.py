@@ -142,8 +142,8 @@ def split_audio(opt):
             #print(mfcc_feats.shape)
             output = np.concatenate((output, mfcc_feats), axis=1)
         #print(output.shape)
-        video_length = output.shape[0] / 32
-        output = np.pad(output, ((0, 0), (0, 32*(opt['max_video_duration']-round(video_length)))), 'constant')
+        video_length = output.shape[1] / 32
+        output = np.pad(output, ((0, 32*(opt['max_video_duration']-round(video_length))),(0,0)), 'constant')
         outfile = os.path.join(dst, 'audio.npy')
         np.save(outfile, output.T)
         for file in os.listdir(dst):
