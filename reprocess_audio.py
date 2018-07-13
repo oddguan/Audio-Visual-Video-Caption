@@ -112,15 +112,13 @@ def vToA(opt):
 
 def split_audio(opt):
     print('splitting audios...')
+    npy_dir = opt['npy_dir']
     output_dir = opt['output_dir']
-    print('output directory: '+output_dir)
+    print('output directory: '+npy_dir)
     for audio in tqdm(os.listdir(output_dir)):
-        print(os.path.join(output_dir, audio))
-        if os.path.isdir(os.path.join(output_dir, audio)):
-            continue
         audio = os.path.join(output_dir, audio)
         video_id = audio.split("/")[-1].split(".")[0]
-        dst = output_dir + '/' + video_id
+        dst = os.path.join(npy_dir, video_id)
         # if os.path.exists(dst):
         #     shutil.rmtree(dst)
         # os.mkdir(dst)
@@ -156,7 +154,9 @@ def main():
     parser.add_argument('--video_dir', type=str, 
     help='The video dir that one would like to extract audio file from')
     parser.add_argument('--output_dir', type=str, 
-    help='The file output directory')
+    help='The audio file output directory')
+    parser.add_argument('--npy_dir', type=str,
+    help='the numpy array saving directory')
     parser.add_argument('--output_channels', type=int, default=1, 
     help='The number of output audio channels, default to 1')
     parser.add_argument('--output_frequency', type=int, default=16000, 
@@ -173,7 +173,7 @@ def main():
     opt = parser.parse_args()
     opt=vars(opt)
 
-    vToA(opt)
+    #vToA(opt)
     split_audio(opt)
 
 if __name__ == '__main__':
