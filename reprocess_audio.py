@@ -115,6 +115,7 @@ def split_audio(opt):
     output_dir = opt['output_dir']
     print('output directory: '+output_dir)
     for audio in tqdm(os.listdir(output_dir)):
+        print(os.path.join(output_dir, audio))
         if os.path.isdir(os.path.join(output_dir, audio)):
             continue
         audio = os.path.join(output_dir, audio)
