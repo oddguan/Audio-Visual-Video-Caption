@@ -98,10 +98,10 @@ def vToA(opt):
     output_channels = opt['output_channels']
     output_frequency = opt['output_frequency']
     # print(video_id)
-    if os.path.exists(dst):
-        print(" cleanup: " + dst + "/")
-        shutil.rmtree(dst)
-    os.makedirs(dst)
+    # if os.path.exists(dst):
+    #     print(" cleanup: " + dst + "/")
+    #     shutil.rmtree(dst)
+    # os.makedirs(dst)
     for video in tqdm(os.listdir(video_dir)):
         video = video_dir + '/' + video
         video_id = video.split("/")[-1].split(".")[0]
@@ -118,9 +118,9 @@ def split_audio(opt):
         audio = output_dir + '/' + audio
         video_id = audio.split("/")[-1].split(".")[0]
         dst = output_dir + '/' + video_id
-        if os.path.exists(dst):
-            shutil.rmtree(dst)
-        os.mkdir(dst)
+        # if os.path.exists(dst):
+        #     shutil.rmtree(dst)
+        # os.mkdir(dst)
         with open(os.devnull, 'w') as ffmpeg_log:
             command = 'ffmpeg -i ' + audio + ' -f segment -segment_time 1 -c copy ' + dst+ '/' + '%02d.wav'
             subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
@@ -140,9 +140,10 @@ def split_audio(opt):
             output = np.concatenate((output, mfcc_feats), axis=1)
         #print(output.shape)
         video_length = output.shape[0] / 32
+        output = output.T
         output = np.pad(output, ((0, 32*(opt['max_video_duration']-round(video_length))), (0, 0)), 'constant')
         outfile = os.path.join(dst, 'audio.npy')
-        np.save(outfile, output.T)
+        np.save(outfile, output)
         for file in os.listdir(dst):
             if file.endswith('.wav'):
                 os.remove(os.path.join(dst, file))
