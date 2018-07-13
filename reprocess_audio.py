@@ -173,7 +173,7 @@ def main():
     opt = parser.parse_args()
     opt=vars(opt)
 
-    #vToA(opt)
+    vToA(opt)
     split_audio(opt)
 
 if __name__ == '__main__':
