@@ -101,7 +101,8 @@ class MultimodalAtt(nn.Module):
         elif mode == 'inference':
             current_words = self.embedding(
                 torch.LongTensor([self.sos_id] * batch_size).cuda()
-            for i in range(self.max_len - 1):
+
+            for i in range(self.max_len-1):
                 self.video_rnn_encoder.flatten_parameters()
                 self.audio_rnn_encoder.flatten_parameters()
                 self.decoder.flatten_parameters()
