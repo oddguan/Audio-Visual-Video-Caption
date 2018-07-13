@@ -115,9 +115,9 @@ def split_audio(opt):
     output_dir = opt['output_dir']
     print('output directory: '+output_dir)
     for audio in tqdm(os.listdir(output_dir)):
-        if os.path.isdir(audio):
+        if os.path.isdir(os.path.join(output_dir, audio)):
             continue
-        audio = output_dir + '/' + audio
+        audio = os.path.join(output_dir, audio)
         video_id = audio.split("/")[-1].split(".")[0]
         dst = output_dir + '/' + video_id
         # if os.path.exists(dst):
@@ -142,10 +142,9 @@ def split_audio(opt):
             output = np.concatenate((output, mfcc_feats), axis=1)
         #print(output.shape)
         video_length = output.shape[0] / 32
-        output = output.T
-        output = np.pad(output, ((0, 32*(opt['max_video_duration']-round(video_length))), (0, 0)), 'constant')
+        output = np.pad(output, ((0, 0), (0, 32*(opt['max_video_duration']-round(video_length)))), 'constant')
         outfile = os.path.join(dst, 'audio.npy')
-        np.save(outfile, output)
+        np.save(outfile, output.T)
         for file in os.listdir(dst):
             if file.endswith('.wav'):
                 os.remove(os.path.join(dst, file))
