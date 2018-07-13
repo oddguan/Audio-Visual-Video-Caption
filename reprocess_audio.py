@@ -128,6 +128,8 @@ def split_audio(opt):
         
         output = np.zeros((20, 0))
         for segment in os.listdir(dst):
+            if segment == 'audio.npy' or segment == 'video.npy':
+                continue
             segment = dst + '/' + segment
             sample_rate, audio_info = wavfile.read(segment)
             audio_length = audio_info.shape[0]
