@@ -115,6 +115,8 @@ def split_audio(opt):
     output_dir = opt['output_dir']
     print('output directory: '+output_dir)
     for audio in tqdm(os.listdir(output_dir)):
+        if audio == 'audio.npy' or audio == 'video.npy':
+            continue
         audio = output_dir + '/' + audio
         video_id = audio.split("/")[-1].split(".")[0]
         dst = output_dir + '/' + video_id
