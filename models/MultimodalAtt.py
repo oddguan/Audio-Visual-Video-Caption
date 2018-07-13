@@ -98,24 +98,35 @@ class MultimodalAtt(nn.Module):
                 seq_probs.append(output)
             seq_probs = torch.cat(seq_probs, 1)
 
-        # else:
-        #     current_words = self.embedding(
-        #         Variable(torch.LongTensor([self.sos_id] * batch_size)).cuda())
-        #     for i in range(self.max_len - 1):
-        #         self.rnn1.flatten_parameters()
-        #         self.rnn2.flatten_parameters()
-        #         output1, state1 = self.rnn1(padding_frames, state1)
-        #         input2 = torch.cat(
-        #             (output1, current_words.unsqueeze(1)), dim=2)
-        #         output2, state2 = self.rnn2(input2, state2)
-        #         logits = self.out(output2.squeeze(1))
-        #         logits = F.log_softmax(logits, dim=1)
-        #         seq_probs.append(logits.unsqueeze(1))
-        #         _, preds = torch.max(logits, 1)
-        #         current_words = self.embedding(preds)
-        #         seq_preds.append(preds.unsqueeze(1))
-        #     seq_probs = torch.cat(seq_probs, 1)
-        #     seq_preds = torch.cat(seq_preds, 1)
+        elif mode == 'inference:
+            current_words = self.embedding(
+                torch.LongTensor([self.sos_id] * batch_size).cuda()
+            for i in range(self.max_len - 1):
+                self.video_rnn_encoder.flatten_parameters()
+                self.audio_rnn_encoder.flatten_parameters()
+                self.decoder.flatten_parameters()
+                decoder_input = torch.cat((decoder_input, current_words.unsqueeze(1)), dim=2)
+                decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_hidden, decoder_cell))
+                
+                if opt['temporal_attention']:
+                    vid_context = self.TemporalAttention_vid(decoder_hidden, video_encoder_output)
+                    aud_context = self.TemporalAttention_aud(decoder_hidden, audio_encoder_output)    
+                else:
+                    vid_context = video_encoder_output.mean(1).unsqueeze(1)
+                    aud_context = audio_encoder_output.mean(1).unsqueeze(1)
+        
+                context = torch.cat((vid_context, aud_context), dim=1)
+                if opt['multimodel_attention']:
+                    decoder_input = self.MultiModelAttention(decoder_hidden, context)
+                else:
+                    decoder_input = context.mean(1).unsqueeze(1)
+                logits = F.log_softmax(self.out(decoder_output), dim=1)
+                seq_probs.append(logits.unsqueeze(1))
+                _, preds = torch.max(logits, 1)
+                current_words = self.embedding(preds)
+                seq_preds.append(preds.unsqueeze(1))
+            seq_probs = torch.cat(seq_probs, 1)
+            seq_preds = torch.cat(seq_preds, 1)
         return seq_probs, seq_preds
 
         
