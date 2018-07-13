@@ -98,7 +98,7 @@ class MultimodalAtt(nn.Module):
                 seq_probs.append(output)
             seq_probs = torch.cat(seq_probs, 1)
 
-        elif mode == 'inference:
+        elif mode == 'inference':
             current_words = self.embedding(
                 torch.LongTensor([self.sos_id] * batch_size).cuda()
             for i in range(self.max_len - 1):
