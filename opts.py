@@ -20,11 +20,6 @@ def parse_opt():
         default='data/caption.json',
         help='path to the processed video caption json')
 
-
-    # Model settings
-    parser.add_argument(
-        "--model", type=str, default='S2VTModel', help="with model to use")
-
     parser.add_argument(
         "--max_len",
         type=int,
@@ -34,14 +29,14 @@ def parse_opt():
     parser.add_argument(
         '--dim_hidden',
         type=int,
-        default=512,
+        default=1024,
         help='size of the rnn hidden layer')
 
     parser.add_argument(
         '--num_layers', type=int, default=1, help='number of layers in the RNN')
 
     parser.add_argument(
-        '--input_dropout_p', (or directory if mode==validate)
+        '--input_dropout_p',
         type=float,
         default=0.2,
         help='strength of dropout in the Language Model RNN')
