@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 import os
 import argparse
 import json
+import glob
 
 import NLUtils
 from cocoeval import suppress_stdout_stderr, COCOScorer
@@ -56,29 +57,25 @@ def eval(model, crit, dataset, vocab, opt):
     if not os.path.exists(opt["results_path"]):
         os.makedirs(opt["results_path"])
 
-    with open(os.path.join(opt["results_path"], "scores.txt"), 'a') as scores_table:
+    with open(os.path.join(opt["results_path"], "validation_scores.txt"), 'a') as scores_table:
         scores_table.write(json.dumps(results[0]) + "\n")
-    with open(os.path.join(opt["results_path"],
-                           opt["model"].split("/")[-1].split('.')[0] + ".json"), 'w') as prediction_results:
-        json.dump({"predictions": samples, "scores": valid_score},
-                  prediction_results)
 
 def main(opt):
     model = MultimodalAtt(MultimodalAtt(opt['vocab_size'], opt['max_len'], opt['dim_hidden'], opt['dim_word'], dim_vid=opt['dim_vid'],
     n_layers=opt['num_layers'], rnn_cell=opt['rnn_type'], rnn_dropout_p=opt['rnn_dropout_p']))
     model = nn.DataParallel(model)
-    dataset = VideoAudioDataset(opt, 'test')
-    model.load_state_dict(opt['model_path'])
+    dataset = VideoAudioDataset(opt, 'val')
     crit = NLUtils.LanguageModelCriterion()
-
-    eval(model, crit, dataset, dataset.get_vocab(), opt)
+    for model_path in glob.glob(os.path.join(opt['model_directory'],'*.pth')):
+        model.load_state_dict(model_path)
+        eval(model, crit, dataset, dataset.get_vocab(), opt)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--recover_opt', type=str, required=True,
                         help='recover train opts from saved opt_json')
-    parser.add_argument('--model_path', type=str, required=True,
-                        help='path to saved model')
+    parser.add_argument('--model_directory', type=str, required=True,
+                        help='path to saved model directory')
     parser.add_argument('--dump_json', type=int, default=1,
                         help='Dump json with predictions into vis folder? (1=yes,0=no)')
     parser.add_argument('--results_path', type=str, default='results/')

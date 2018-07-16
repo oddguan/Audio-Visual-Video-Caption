@@ -20,19 +20,6 @@ def parse_opt():
         default='data/caption.json',
         help='path to the processed video caption json')
 
-    parser.add_argument(
-        '--feats_dir',
-        nargs='*',
-        type=str,
-        default=['data/feats/resnet152/'],
-        help='path to the directory containing the preprocessed fc feats')
-
-    parser.add_argument(
-        '--spectrogram_dir',
-        type=str,
-        default='/home/chenxiao/msrvtt_2017/train-video/audio_spectrograms',
-        help='path to the directory containing all audio spectrograms in .png format'
-    )
 
     # Model settings
     parser.add_argument(
@@ -54,7 +41,7 @@ def parse_opt():
         '--num_layers', type=int, default=1, help='number of layers in the RNN')
 
     parser.add_argument(
-        '--input_dropout_p',
+        '--input_dropout_p', (or directory if mode==validate)
         type=float,
         default=0.2,
         help='strength of dropout in the Language Model RNN')
