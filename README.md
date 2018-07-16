@@ -1,4 +1,4 @@
-# video_caption_v2
+# Audio Visual Video Captioning
 
 This is the project that I built for video captioning with the MSR-VTT dataset by using the pytorch framework, which involves both video and audio information.
 
@@ -9,11 +9,12 @@ The basic structure of the whole project are imported from [here](https://github
 To run the project, you need the following dependencies:
 
 - python 3
-- pytorch 0.4.0
-- cuda
-- ffmpeg
-- tqdm
-- pretrainedmodels 
+- [pytorch 0.4.0](https://pytorch.org/)
+- [cuda 9.1](https://developer.nvidia.com/cuda-91-download-archive)
+- [ffmpeg](https://www.ffmpeg.org/)
+- [tqdm](https://tqdm.github.io/)
+- [pretrainedmodels](https://github.com/Cadene/pretrained-models.pytorch)
+- [librosa](https://github.com/librosa/librosa)
 
 ## Steps To Run the Model
 
