@@ -42,12 +42,9 @@ def parse_opt():
         help='strength of dropout in the Language Model RNN')
 
     parser.add_argument(
-        '--rnn_type', type=str, default='lstm', help='lstm or gru')
-
-    parser.add_argument(
         '--rnn_dropout_p',
         type=float,
-        default=0.5,
+        default=0,
         help='strength of dropout in the Language Model RNN')
 
     parser.add_argument(
@@ -66,7 +63,7 @@ def parse_opt():
     # Optimization: General
 
     parser.add_argument(
-        '--epochs', type=int, default=6001, help='number of epochs')
+        '--epochs', type=int, default=3001, help='number of epochs')
 
     parser.add_argument(
         '--batch_size', type=int, default=128, help='minibatch size')
@@ -77,15 +74,7 @@ def parse_opt():
         help='clip gradients at this value')
 
     parser.add_argument(
-        '--self_crit_after',
-        type=int,
-        default=-1,
-        help='After what epoch do we start finetuning the CNN? \
-                        (-1 = disable; never finetune, 0 = finetune from start)'
-    )
-
-    parser.add_argument(
-        '--learning_rate', type=float, default=4e-4, help='learning rate')
+        '--learning_rate', type=float, default=10e-4, help='learning rate')
 
     parser.add_argument(
         '--learning_rate_decay_every',
