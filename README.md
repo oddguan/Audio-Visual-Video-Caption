@@ -2,7 +2,9 @@
 
 This is the project that I built for video captioning with the MSR-VTT dataset by using the pytorch framework, which involves both video and audio information.
 
-Videos visual content are preprocessed into a fixed number of frames, feed into a pretrained deep CNN (ResNet 152 for example) to extract features, and feed into a LSTM encoder. For the audio content, They are preprocessed into mfccs and feed into another LSTM encoder. The outputs and hidden states of both LSTM encoders are then combined by average pooling (or multi-model attention attentions) and further feed into the LSTM decoder for generating the captions.
+Video's visual content are preprocessed into a fixed number of frames, feed into a pretrained deep CNN (ResNet 152 for example) to extract features, and feed into a LSTM encoder. For the audio content, They are preprocessed into MFCCs and feed into another LSTM encoder. The outputs and hidden states of both LSTM encoders are then combined by average pooling (or multi-model attentions, and childsum unit<sup>[1](https://www.microsoft.com/en-us/research/wp-content/uploads/2017/11/coi110-xuA.pdf)</sup>) and further feed into the LSTM decoder for generating the captions.
+
+The basic structure of the whole project are imported from [here](https://github.com/xiadingZ/video-caption.pytorch). 
 
 To run the project, you need the following dependencies:
 
@@ -29,6 +31,17 @@ To train the model, run `train.py`, and all of the option inputs are in the `opt
 
 `$python train.py --video_dir video/directory --output_dir features/directory --gpu 0`
 
+## Results comparison
+
+The following table shows some state-of-the-art results of video captioning models on MSR-VTT, and my own results on the problem.
+
+| Methods                 | BLEU@4 | METEOR | CIDEr-D | ROUGE-L|
+|:------------------------|:------:|:------:|:-----:|:------:|
+|MA-LSTM (G+C+A)(childsum)<sup>[1]</sup>|36.5|26.5 |41.0|59.8|
+|hLSTMat (R)<sup>[2]</sup>|38.3|26.3|-|-|
+|R+MCNN+MCF-matrix multiply <sup>[3]</sup>|38.1|27.2|42.1|-|
+
+
 ## Currently...
 
 ### 07/16/2018
@@ -44,3 +57,11 @@ By using 4 Nvidia GeForce 1080ti, one is used for the basic mean-pool model, and
 - Utilize the dataset from Marc and Justin.
 
 
+
+## References
+
+<sup>[1]</sup> Xu, Jun, et al. "Learning Multimodal Attention LSTM Networks for Video Captioning." Proceedings of the 2017 ACM on Multimedia Conference. ACM, 2017.
+
+<sup>[2]</sup> Song, Jingkuan, et al. "Hierarchical LSTM with adjusted temporal attention for video captioning." arXiv preprint arXiv:1706.01231 (2017).
+
+<sup>[3]</sup> Wu, Aming, and Yahong Han. "Multi-modal Circulant Fusion for Video-to-Language and Backward." IJCAI. 2018.
