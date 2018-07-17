@@ -6,6 +6,7 @@ import os
 import argparse
 import json
 import glob
+import tqdm
 
 import NLUtils
 from cocoeval import suppress_stdout_stderr, COCOScorer
@@ -68,7 +69,8 @@ def main(opt):
     model = nn.DataParallel(model)
     
     crit = NLUtils.LanguageModelCriterion()
-    for model_path in glob.glob(os.path.join(opt['model_directory'],'*.pth')):
+    for model_path in tqdm(glob.glob(os.path.join(opt['model_directory'],'*.pth'))):
+        print('validating '+model_path)
         model.load_state_dict(torch.load(model_path))
         eval(model, crit, dataset, dataset.get_vocab(), opt)
 
