@@ -69,7 +69,7 @@ def main(opt):
     model = MultimodalAtt(opt['vocab_size'], opt['max_len'], opt['dim_hidden'], opt['dim_word'], dim_vid=opt['dim_vid'],
     n_layers=opt['num_layers'], rnn_cell=opt['rnn_type'], rnn_dropout_p=opt['rnn_dropout_p'])
     model = nn.DataParallel(model)
-    model.load_state_dict(opt['model_path'])
+    model.load_state_dict(torch.load(opt['model_path']))
     crit = NLUtils.LanguageModelCriterion()
 
     eval(model, crit, dataset, dataset.get_vocab(), opt)
