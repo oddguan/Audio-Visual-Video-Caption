@@ -99,7 +99,7 @@ class MultimodalAtt(nn.Module):
             seq_probs = torch.cat(seq_probs, 1)
 
         elif mode == 'inference':
-            current_words = self.embedding(torch.LongTensor([self.sos_id] * batch_size)).cuda()
+            current_words = self.embedding(torch.cuda.LongTensor([self.sos_id] * batch_size))
 
             for i in range(self.max_len-1):
                 self.video_rnn_encoder.flatten_parameters()
