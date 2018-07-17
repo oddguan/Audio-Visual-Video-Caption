@@ -61,10 +61,12 @@ def eval(model, crit, dataset, vocab, opt):
         scores_table.write(json.dumps(results[0]) + "\n")
 
 def main(opt):
+    dataset = VideoAudioDataset(opt, 'val')
+    opt['vocab_size'] = dataset.get_vocab_size()
     model = MultimodalAtt(opt['vocab_size'], opt['max_len'], opt['dim_hidden'], opt['dim_word'], dim_vid=opt['dim_vid'],
     n_layers=opt['num_layers'], rnn_cell=opt['rnn_type'], rnn_dropout_p=opt['rnn_dropout_p'])
     model = nn.DataParallel(model)
-    dataset = VideoAudioDataset(opt, 'val')
+    
     crit = NLUtils.LanguageModelCriterion()
     for model_path in glob.glob(os.path.join(opt['model_directory'],'*.pth')):
         model.load_state_dict(model_path)
