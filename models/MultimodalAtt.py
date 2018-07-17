@@ -122,7 +122,7 @@ class MultimodalAtt(nn.Module):
                     decoder_input = self.MultiModelAttention(decoder_hidden, context)
                 else:
                     decoder_input = context.mean(1).unsqueeze(1)
-                logits = F.log_softmax(self.out(decoder_output), dim=1)
+                logits = F.log_softmax(self.out(decoder_output).squeeze(1), dim=1)
                 seq_probs.append(logits.unsqueeze(1))
                 _, preds = torch.max(logits, 1)
                 current_words = self.embedding(preds)
