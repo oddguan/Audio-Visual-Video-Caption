@@ -7,7 +7,7 @@ def parse_opt():
     parser.add_argument(
         '--input_json',
         type=str,
-        default='data/videodatainfo_2017_usfc.json',
+        default='data/videodatainfo_2017_ustc.json',
         help='path to the json file containing video info')
     parser.add_argument(
         '--info_json',
