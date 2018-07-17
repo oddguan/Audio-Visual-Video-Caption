@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 import os
 import argparse
 import json
+from pandas.io.json import json_normalize
 
 import NLUtils
 from cocoeval import suppress_stdout_stderr, COCOScorer
@@ -28,7 +29,7 @@ def eval(model, crit, dataset, vocab, opt):
     model.eval()
     loader = DataLoader(dataset, batch_size=opt['batch_size'], shuffle=True)
     scorer = COCOScorer()
-    gt_dataframe = json.json_normalize(
+    gt_dataframe = json_normalize(
         json.load(open(opt["input_json"]))['sentences'])
     gts = convert_data_to_coco_scorer_format(gt_dataframe)
     results = []
