@@ -60,7 +60,7 @@ def eval(model, crit, dataset, vocab, opt):
     with open(os.path.join(opt["results_path"], "scores.txt"), 'a') as scores_table:
         scores_table.write(json.dumps(results[0]) + "\n")
     with open(os.path.join(opt["results_path"],
-                           opt["model"].split("/")[-1].split('.')[0] + ".json"), 'w') as prediction_results:
+                           'vanilla' + ".json"), 'w') as prediction_results:
         json.dump({"predictions": samples, "scores": valid_score},
                   prediction_results)
 
