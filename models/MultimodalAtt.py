@@ -105,6 +105,8 @@ class MultimodalAtt(nn.Module):
                 self.video_rnn_encoder.flatten_parameters()
                 self.audio_rnn_encoder.flatten_parameters()
                 self.decoder.flatten_parameters()
+                print(decoder_input.shape)
+                print(current_words.shape)
                 decoder_input = torch.cat((decoder_input, current_words.unsqueeze(1)), dim=2)
                 decoder_output, (decoder_hidden, decoder_cell) = self.decoder(decoder_input, (decoder_hidden, decoder_cell))
                 
