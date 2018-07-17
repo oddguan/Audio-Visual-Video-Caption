@@ -69,7 +69,7 @@ def main(opt):
     
     crit = NLUtils.LanguageModelCriterion()
     for model_path in glob.glob(os.path.join(opt['model_directory'],'*.pth')):
-        model.load_state_dict(model_path)
+        model.load_state_dict(torch.load(model_path))
         eval(model, crit, dataset, dataset.get_vocab(), opt)
 
 if __name__ == '__main__':
