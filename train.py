@@ -52,8 +52,8 @@ def train(loader, model, crit, optimizer, lr_scheduler, opt):
 def main(opt):
     dataset = VideoAudioDataset(opt, 'train')
     loader = DataLoader(dataset, batch_size=opt['batch_size'], shuffle=True)
-    opt['vocab_size'] = dataset.get_vocab_size()
-    model = MultimodalAtt(opt['vocab_size'], opt['max_len'], opt['dim_hidden'], opt['dim_word'], dim_vid=opt['dim_vid'],
+    # opt['vocab_size'] = dataset.get_vocab_size()
+    model = MultimodalAtt(dataset.get_vocab_size(), opt['max_len'], opt['dim_hidden'], opt['dim_word'], dim_vid=opt['dim_vid'],
     n_layers=opt['num_layers'], rnn_cell=opt['rnn_type'], rnn_dropout_p=opt['rnn_dropout_p'])
     model = model.cuda()
     crit = LanguageModelCriterion()
