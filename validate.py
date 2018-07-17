@@ -6,7 +6,7 @@ import os
 import argparse
 import json
 import glob
-import tqdm
+from tqdm import tqdm
 
 import NLUtils
 from cocoeval import suppress_stdout_stderr, COCOScorer
