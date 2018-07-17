@@ -1,6 +1,6 @@
 # Audio Visual Video Captioning
 
-This is the project that I built for video captioning with the MSR-VTT dataset by using the pytorch framework, which involves both video and audio information.
+This is the project that I built for video captioning with the MSR-VTT dataset by using the pytorch framework, which involves both visual and audio information.
 
 Video's visual content are preprocessed into a fixed number of frames, feed into a pretrained deep CNN (ResNet 152 for example) to extract features, and feed into a LSTM encoder. For the audio content, They are preprocessed into MFCCs and feed into another LSTM encoder. The outputs and hidden states of both LSTM encoders are then combined by average pooling (or multi-model attentions, and childsum unit<sup>[1](https://www.microsoft.com/en-us/research/wp-content/uploads/2017/11/coi110-xuA.pdf)</sup>) and further feed into the LSTM decoder for generating the captions.
 
@@ -22,7 +22,7 @@ the first step would be preprocess the video and captions
 
 `$ python preprocess.py --video_dir path/to/the/training/video/directory --output_dir path/to/the/features/output/dir`
 
-This is will preprocess video contents into extracted features and audio mfcc in `.npy` fasion.
+This is will preprocess video contents into extracted features and audio mfcc in `.npy` fashion.
 
 `$ python preprocess_vocab.py`
 
@@ -48,15 +48,15 @@ The following table shows some state-of-the-art results of video captioning mode
 ### 07/16/2018
 I made sure that the training part is working without the childsum unit and multilevel attentions. The model is being trained and producing a decent result, and by decent I mean the training loss is lower than what the vanilla non-audio feature model has produced. 
 
-By using 4 Nvidia GeForce 1080ti, one is used for the basic mean-pool model, and the other three are used for the mean-pool with multi-level attentions. For the latter model, the batch sized was down to 32 from 128, since the attention model has taken so much memories from GPU. Even using three GPUs instead of one, the model still can't fit into the memory. Hopefully the result won't be affected a lot by this.
+By using 4 Nvidia GeForce 1080ti, one is used for the basic mean-pool model, and the other three are used for the mean-pool with multi-level attentions. For the latter model, the batch size was down to 32 from 128, since the attention model has taken so much memories from GPU. Even using three GPUs instead of one, the model still can't fit into the memory. Hopefully the result won't be affected a lot by this.
 
 
 ## TODO
 - Create a score benchmark for all of my implementations.
 - To make sure the validation and the evaluation part works properly, after I have a spare gpu to test.
-- If time permitted, I will come up with a CNN architecture to extract the audio feature and compare the result, or use the vggish model instead of a lstm extracting mfccs. 
+- If time permitted, I will come up with a CNN architecture to extract the audio feature and compare the result, or use the vggish model instead of a lstm extracting MFCCs. 
 - Utilize the dataset from Marc and Justin.
-
+- Comment the whole project.
 
 
 ## References
