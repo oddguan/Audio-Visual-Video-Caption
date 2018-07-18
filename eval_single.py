@@ -15,6 +15,7 @@ import NLUtils
 
 
 def vToA(path):
+    print('converting video to audio...')
     band_width = 160
     output_channels = 1
     output_frequency = 16000
@@ -28,6 +29,7 @@ def vToA(path):
 
 
 def split_audio(wav_path):
+    print('splitting audios...')
     dst = os.path.join(os.getcwd(), 'info')
     with open(os.devnull, 'w') as ffmpeg_log:
         command = 'ffmpeg -i ' + wav_path + ' -f segment -segment_time 1 -c copy ' + os.path.join(dst,'%02d.wav')
@@ -56,6 +58,7 @@ def split_audio(wav_path):
 
 
 def extract_image_feats(video_path):
+    print('extracting image features...')
     C, H, W = 3, 224, 224
     model = resnet152(pretrained='imagenet')
     load_image_fn = utils.LoadTransformImage(model)
@@ -87,13 +90,13 @@ def main():
     video_path = '../video4.mp4'
     # model_path = input('enter the model path: ')
     model_path = 'save/vanilla/model_290.pth'
-    print('generating caption...')
     wav_path = vToA(video_path)
     audio_mfcc = split_audio(wav_path)
     audio_mfcc = torch.from_numpy(audio_mfcc).type(torch.FloatTensor).unsqueeze(0)
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     image_feats = extract_image_feats(video_path)
     image_feats = torch.from_numpy(image_feats).type(torch.FloatTensor).unsqueeze(0)
+    print('generating caption...')
     model = MultimodalAtt(18600, 28, 1024, 512, rnn_dropout_p=0)
     model.load_state_dict(torch.load(model_path))
     model = model.cuda()
