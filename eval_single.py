@@ -64,7 +64,7 @@ def extract_image_feats(video_path):
     print('extracting image features...')
     model = resnet152(pretrained='imagenet')
     model = model.cuda()
-    model = nn.DataParallel(model)
+    # model = nn.DataParallel(model)
     model.last_linear = utils.Identity()
     model.eval()
     C, H, W = 3, 224, 224
