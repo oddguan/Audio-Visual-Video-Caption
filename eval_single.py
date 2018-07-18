@@ -102,3 +102,5 @@ def main():
     sent = NLUtils.decode_sequence(vocab, seq_preds)
     print(sent)
 
+if __name__ == '__main__':
+    main()
