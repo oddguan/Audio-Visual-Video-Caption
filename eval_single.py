@@ -95,7 +95,7 @@ def main():
     # video_path = input('en In the Shell you should seter the path to the video:')
     video_path = '../video9295.mp4'
     # model_path = input('enter the model path: ')
-    model_path = 'save/vanilla/model_290.pth'
+    model_path = 'save/vanilla/model_2190.pth'
     wav_path = vToA(video_path)
     audio_mfcc = split_audio(wav_path)
     audio_mfcc = torch.from_numpy(audio_mfcc).type(torch.FloatTensor).unsqueeze(0)
