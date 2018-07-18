@@ -44,12 +44,12 @@ The following table shows some state-of-the-art results of video captioning mode
 |**My own methods**           |  |  |  |
 |Vanilla S2VT (without audio)<sup>[4]</sup>|0.29|0.25|-|0.55|
 |Vanilla mean-pool|33.7|26.6|41.4|57.9|
-|Multimodal Attention|35.8|26.3|40.2|57.9|
+|Multi-level Attention|35.8|26.3|40.2|57.9|
 
 ## Currently...
 
 ### 07/18/2018
-Finished evaluating two methods: the vanilla mean-pool and the multimodal attention. Still left with the child-sum unit to go. Two methods have similar performance, while the model with attention requires more GPU memory to both train and evaluate. They still can't beat the state-of-the-art results, but they perform fairly well, and it is pretty clear that the audio feature has helped a lot for the model to better understand the video content, compare to my own implementation of the vanilla S2VT model presented by [this](https://arxiv.org/pdf/1505.00487.pdf) paper. 
+Finished evaluating two methods: the vanilla mean-pool and the multi-level attention. Still left with the child-sum unit to go. Two methods have similar performance, while the model with attention requires more GPU memory to both train and evaluate. They still can't beat the state-of-the-art results, but they perform fairly well, and it is pretty clear that the audio feature has helped a lot for the model to better understand the video content, compare to my own implementation of the vanilla S2VT model presented by [this](https://arxiv.org/pdf/1505.00487.pdf) paper. 
 
 ### 07/16/2018
 I made sure that the training part is working without the childsum unit and multilevel attentions. The model is being trained and producing a decent result, and by decent I mean the training loss is lower than what the vanilla non-audio feature model has produced. 
