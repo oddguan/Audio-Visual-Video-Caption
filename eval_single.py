@@ -20,7 +20,7 @@ def vToA(path):
     output_frequency = 16000
     video_name = path.split("/")[-1].split(".")[0]
     # print(video_id)
-    dst = os.path.join(path, 'info')
+    dst = os.path.join(path.split('.')[0], 'info')
     os.mkdir(dst)
     with open(os.devnull, "w") as ffmpeg_log:
         command = 'ffmpeg -i ' + path + ' -ab ' + str(band_width) + 'k -ac ' + str(output_channels) + ' -ar ' + str(output_frequency) + ' -vn ' + dst + '/' + video_name + '.wav'
@@ -84,7 +84,7 @@ def extract_image_feats(video_path):
 
 
 def main():
-    video_path = input('enter the path to the video:')
+    video_path = input('en In the Shell you should seter the path to the video:')
     model_path = input('enter the model path: ')
     print('generating caption...')
     wav_path = vToA(video_path)
