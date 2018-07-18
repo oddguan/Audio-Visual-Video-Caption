@@ -19,8 +19,7 @@ def vToA(path):
     output_channels = 1
     output_frequency = 16000
     video_name = path.split("/")[-1].split(".")[0]
-    # print(video_id)
-    dst = os.path.join(path.split('.')[0], 'info')
+    dst = os.path.join(path.split('/')[0], 'info')
     os.mkdir(dst)
     with open(os.devnull, "w") as ffmpeg_log:
         command = 'ffmpeg -i ' + path + ' -ab ' + str(band_width) + 'k -ac ' + str(output_channels) + ' -ar ' + str(output_frequency) + ' -vn ' + dst + '/' + video_name + '.wav'
