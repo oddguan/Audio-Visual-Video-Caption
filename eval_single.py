@@ -108,8 +108,12 @@ def main():
     model = model.cuda()
     model.eval()
     model = nn.DataParallel(model)
+    opt = dict()
+    opt['child_sum'] = False
+    opt['temporal_attention'] = False
+    opt['multimodel_attention'] = False
     with torch.no_grad():
-        _, seq_preds = model(image_feats, audio_mfcc, mode='inference')
+        _, seq_preds = model(image_feats, audio_mfcc, mode='inference', opt)
     vocab = json.load(open('data/info.json'))['ix_to_word']
     sent = NLUtils.decode_sequence(vocab, seq_preds)
     print(sent)
