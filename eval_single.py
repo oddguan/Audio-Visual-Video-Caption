@@ -103,7 +103,7 @@ def main():
     image_feats = extract_image_feats(video_path)
     image_feats = torch.from_numpy(image_feats).type(torch.FloatTensor).unsqueeze(0)
     print('generating caption...')
-    model = MultimodalAtt(18600, 28, 1024, 512, rnn_dropout_p=0)
+    model = MultimodalAtt(16860, 28, 1024, 512, rnn_dropout_p=0)
     model = model.cuda()
     model = nn.DataParallel(model)
     model.load_state_dict(torch.load(model_path))
