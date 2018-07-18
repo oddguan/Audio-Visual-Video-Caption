@@ -39,6 +39,7 @@ def split_audio(wav_path):
         subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
     os.remove(wav_path)
     output = np.zeros((20, 0))
+    print(os.listdir(dst))
     for segment in os.listdir(dst):
         segment = os.path.join(dst, segment)
         sample_rate, audio_info = wavfile.read(segment)
