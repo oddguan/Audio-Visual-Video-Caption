@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import glob
+import shutil
 from pretrainedmodels import resnet152
 from librosa.feature import mfcc
 from scipy.io import wavfile
@@ -21,6 +22,8 @@ def vToA(path):
     output_frequency = 16000
     video_name = path.split("/")[-1].split(".")[0]
     dst = os.path.join(path.split('/')[0], 'info')
+    if os.path.isdir(dst):
+        shutil.rmtree(dst)
     os.mkdir(dst)
     with open(os.devnull, "w") as ffmpeg_log:
         command = 'ffmpeg -i ' + path + ' -ab ' + str(band_width) + 'k -ac ' + str(output_channels) + ' -ar ' + str(output_frequency) + ' -vn ' + dst + '/' + video_name + '.wav'
