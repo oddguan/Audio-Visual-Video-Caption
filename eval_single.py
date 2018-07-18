@@ -65,6 +65,9 @@ def extract_image_feats(video_path):
     C, H, W = 3, 224, 224
     model = resnet152(pretrained='imagenet')
     load_image_fn = utils.LoadTransformImage(model)
+    model = model.cuda()
+    model = nn.DataParallel(model)
+    model.last_linear = utils.Identity()
     model.eval()
     dst = os.path.join(video_path.split('/')[0], 'info')
     with open(os.devnull, "w") as ffmpeg_log:
