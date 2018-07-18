@@ -113,7 +113,7 @@ def main():
     opt['temporal_attention'] = False
     opt['multimodel_attention'] = False
     with torch.no_grad():
-        _, seq_preds = model(image_feats, audio_mfcc, mode='inference', opt)
+        _, seq_preds = model(image_feats, audio_mfcc, mode='inference', opt=opt)
     vocab = json.load(open('data/info.json'))['ix_to_word']
     sent = NLUtils.decode_sequence(vocab, seq_preds)
     print(sent)
