@@ -109,9 +109,9 @@ def main():
     model.eval()
     model = nn.DataParallel(model)
     opt = dict()
-    opt['child_sum'] = False
-    opt['temporal_attention'] = False
-    opt['multimodel_attention'] = False
+    opt['child_sum'] = True
+    opt['temporal_attention'] = True
+    opt['multimodel_attention'] = True
     with torch.no_grad():
         _, seq_preds = model(image_feats, audio_mfcc, mode='inference', opt=opt)
     vocab = json.load(open('data/info.json'))['ix_to_word']
