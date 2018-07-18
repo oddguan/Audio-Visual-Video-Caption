@@ -93,7 +93,7 @@ def extract_image_feats(video_path):
 
 def main():
     # video_path = input('en In the Shell you should seter the path to the video:')
-    video_path = '../video4.mp4'
+    video_path = '../video9295.mp4'
     # model_path = input('enter the model path: ')
     model_path = 'save/vanilla/model_290.pth'
     wav_path = vToA(video_path)
