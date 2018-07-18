@@ -62,13 +62,13 @@ def split_audio(wav_path):
 
 def extract_image_feats(video_path):
     print('extracting image features...')
-    C, H, W = 3, 224, 224
-    model = resnet152(pretrained='imagenet')
-    load_image_fn = utils.LoadTransformImage(model)
     model = model.cuda()
     model = nn.DataParallel(model)
     model.last_linear = utils.Identity()
     model.eval()
+    C, H, W = 3, 224, 224
+    model = resnet152(pretrained='imagenet')
+    load_image_fn = utils.LoadTransformImage(model)
     dst = os.path.join(video_path.split('/')[0], 'info')
     with open(os.devnull, "w") as ffmpeg_log:
         command = 'ffmpeg -i ' + video_path + ' -vf scale=400:300 ' + '-qscale:v 2 '+ '{0}/%06d.jpg'.format(dst)
