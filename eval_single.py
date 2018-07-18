@@ -33,13 +33,12 @@ def vToA(path):
 
 def split_audio(wav_path):
     print('splitting audios...')
-    dst = os.path.join(os.getcwd(), 'info')
+    dst = os.path.join(wav_path.split('/')[0], 'info')
     with open(os.devnull, 'w') as ffmpeg_log:
         command = 'ffmpeg -i ' + wav_path + ' -f segment -segment_time 1 -c copy ' + os.path.join(dst,'%02d.wav')
         subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
     os.remove(wav_path)
     output = np.zeros((20, 0))
-    print(os.listdir(dst))
     for segment in os.listdir(dst):
         segment = os.path.join(dst, segment)
         sample_rate, audio_info = wavfile.read(segment)
@@ -67,7 +66,7 @@ def extract_image_feats(video_path):
     model = resnet152(pretrained='imagenet')
     load_image_fn = utils.LoadTransformImage(model)
     model.eval()
-    dst = os.path.join(os.getcwd(), 'info')
+    dst = os.path.join(video_path.split('/')[0], 'info')
     with open(os.devnull, "w") as ffmpeg_log:
         command = 'ffmpeg -i ' + video_path + ' -vf scale=400:300 ' + '-qscale:v 2 '+ '{0}/%06d.jpg'.format(dst)
         subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
