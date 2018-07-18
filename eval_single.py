@@ -104,10 +104,10 @@ def main():
     image_feats = torch.from_numpy(image_feats).type(torch.FloatTensor).unsqueeze(0)
     print('generating caption...')
     model = MultimodalAtt(18600, 28, 1024, 512, rnn_dropout_p=0)
-    model.load_state_dict(torch.load(model_path))
     model = model.cuda()
-    model.eval()
     model = nn.DataParallel(model)
+    model.load_state_dict(torch.load(model_path))
+    model.eval()
     opt = dict()
     opt['child_sum'] = True
     opt['temporal_attention'] = True
