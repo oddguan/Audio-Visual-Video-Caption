@@ -89,7 +89,7 @@ def main():
     print('generating caption...')
     wav_path = vToA(video_path)
     audio_mfcc = split_audio(wav_path)
-    os.environ['CUDA_VISIBLE_DEVICES'] = 0
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     image_feats = extract_image_feats(video_path)
     model = MultimodalAtt(18600, 28, 1024, 512, rnn_dropout_p=0)
     model.load_state_dict(torch.load(model_path))
