@@ -68,7 +68,7 @@ def main(opt):
     dataset = VideoAudioDataset(opt, 'test')
     opt['vocab_size'] = dataset.get_vocab_size()
     model = MultimodalAtt(opt['vocab_size'], opt['max_len'], opt['dim_hidden'], opt['dim_word'], dim_vid=opt['dim_vid'],
-    n_layers=opt['num_layers'], rnn_cell=opt['rnn_type'], rnn_dropout_p=opt['rnn_dropout_p']).cuda()
+    n_layers=opt['num_layers'], rnn_dropout_p=opt['rnn_dropout_p']).cuda()
     model = nn.DataParallel(model)
     model.load_state_dict(torch.load(opt['model_path']))
     crit = NLUtils.LanguageModelCriterion()
