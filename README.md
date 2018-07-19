@@ -42,9 +42,12 @@ The following table shows some state-of-the-art results of video captioning mode
 |hLSTMat (R)<sup>[2]</sup>|38.3|26.3|-|-|
 |R+MCNN+MCF-matrix multiply <sup>[3]</sup>|38.1|27.2|42.1|-|
 |**My own methods**           |  |  |  |
-|S2VT (without audio)<sup>[4]</sup>|0.29|0.25|-|0.55|
+|S2VT (without audio)<sup>[4]</sup>|29.3|25.2|-|54.5|
 |Vanilla mean-pool|33.7|26.6|41.4|57.9|
 |Multi-level Attention|35.8|26.3|40.2|57.9|
+
+<sup>*dashed line means either the results were not reported by the paper, or the score was not recorded.</sup>
+
 
 ## Currently...
 
