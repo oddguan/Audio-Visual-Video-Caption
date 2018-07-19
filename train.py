@@ -80,6 +80,3 @@ if __name__ == '__main__':
         json.dump(opt, f)
     print('save opt details to %s' % (opt_json))
     main(opt)
-
-
-

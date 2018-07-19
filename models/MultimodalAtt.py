@@ -8,45 +8,58 @@ from .ChildSum import ChildSum
 class MultimodalAtt(nn.Module):
 
     def __init__(self, vocab_size, max_len, dim_hidden, dim_word, dim_vid=2048, 
-    dim_audio=20, sos_id=1, eos_id=0, n_layers=1, rnn_cell='lstm', 
-    rnn_dropout_p=0.2):
+    dim_audio=20, sos_id=1, eos_id=0, n_layers=1, rnn_dropout_p=0):
         super(MultimodalAtt, self).__init__()
 
         self.rnn_cell = nn.LSTM
         
+        # dimension of the word embedding layer
         self.dim_word = dim_word
+        # Output size would be a one-dimensional vector of the vocab base
         self.dim_output = vocab_size
+        # The hidden size of the LSTM cells output
         self.dim_hidden = dim_hidden
+        # Define the max length of either the generated sentence or training caption
         self.max_len = max_len
+        # Number of layers for the LSTM cells. Default to 1
         self.n_layers = n_layers
+        # Dimension of the video feature. Default to 2048
         self.dim_vid = dim_vid
+        # Dimension of the audio feature. Default to 20 (extract 20 MFCCs for each time step)
         self.dim_audio = dim_audio
+        # The ix in the vocab base for the <SOS> signal
         self.sos_id = sos_id
+        # Same as above for <EOS>
         self.eos_id = eos_id
 
+        # Define LSTM encoders
         self.video_rnn_encoder = self.rnn_cell(self.dim_vid, self.dim_hidden, 
         self.n_layers, dropout=rnn_dropout_p, batch_first=True)
         self.audio_rnn_encoder = self.rnn_cell(self.dim_audio, self.dim_hidden, 
         self.n_layers, dropout=rnn_dropout_p, batch_first=True)
 
+        # Define Attention layers and child-sum unit
         self.TemporalAttention_vid = Attention(dim_hidden)
         self.TemporalAttention_aud = Attention(dim_hidden)
         self.MultiModelAttention = Attention(dim_hidden)
         self.ChildSum = ChildSum(dim_hidden)
 
-        # self.naive_fusion = nn.Linear(self.dim_hidden*2, dim_hidden, bias=False)
+        #Define the LSTM decoder to generate caption
         self.decoder = self.rnn_cell(self.dim_word+self.dim_hidden, self.dim_hidden, 
         n_layers, dropout=rnn_dropout_p, batch_first=True)
 
+        # Embedding layer of the vocab one-hot vector
         self.embedding = nn.Embedding(self.dim_output, self.dim_word)
         self.out = nn.Linear(self.dim_hidden, self.dim_output)
 
 
     def forward(self, image_feats, audio_feats, target_variable=None, mode='train', opt={}):
+        # load features by dataloader
+        # shape = (batch_size, number of frames, dimension of the video feature)
         batch_size, n_frames, _ = image_feats.shape
+        # shape = (batch_size, number of time steps, dimension of the audio feature)
         _, __ , n_mfcc = audio_feats.shape
-        # padding_frames = torch.zeros((batch_size, 1, self.dim_vid)).cuda()
-        # padding_mfccs = torch.zeros((batch_size, 1, self.dim_audio)).cuda()
+        # Encode the inputs
         video_encoder_output, (video_hidden_state, video_cell_state) = self.video_rnn_encoder(image_feats)
         audio_encoder_output, (audio_hidden_state, audio_cell_state) = self.audio_rnn_encoder(audio_feats)
         if opt['child_sum']:
