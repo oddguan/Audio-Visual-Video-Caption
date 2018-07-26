@@ -27,7 +27,7 @@ def convert_data_to_coco_scorer_format(data_frame):
     return gts
 
 
-def eval(model, crit, dataset, vocab, opt):
+def eval(model, crit, dataset, vocab, opt, model_path):
     model.eval()
     loader = DataLoader(dataset, batch_size=opt['batch_size'], shuffle=True)
     scorer = COCOScorer()
@@ -59,8 +59,9 @@ def eval(model, crit, dataset, vocab, opt):
     if not os.path.exists(opt["results_path"]):
         os.makedirs(opt["results_path"])
 
-    with open(os.path.join(opt["results_path"], "validation_scores.txt"), 'a') as scores_table:
-        scores_table.write(json.dumps(results[0]) + "\n")
+    validation_file_name = opt['model_directory'].split('/')[-1]+'_val_score.txt'
+    with open(os.path.join(opt["results_path"], validation_file_name), 'a') as scores_table:
+        scores_table.write(model_path.split('/')[-1]+': '+json.dumps(results[0]) + "\n")
 
 def main(opt):
     dataset = VideoAudioDataset(opt, 'val')
@@ -70,9 +71,8 @@ def main(opt):
     model = nn.DataParallel(model)
     crit = NLUtils.LanguageModelCriterion()
     for model_path in tqdm(glob.glob(os.path.join(opt['model_directory'],'*.pth'))):
-        print('validating '+model_path)
         model.load_state_dict(torch.load(model_path))
-        eval(model, crit, dataset, dataset.get_vocab(), opt)
+        eval(model, crit, dataset, dataset.get_vocab(), opt, model_path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

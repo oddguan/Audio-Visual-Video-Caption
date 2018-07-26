@@ -21,11 +21,29 @@ import pretrainedmodels.utils as utils
 C, H, W = 3, 224, 224
 
 def extract_frame(video, dst):
+    '''
+    Given the input video path, convert each frame of the video
+    into jpg format in the destination directory.
+
+    Args:
+        video: video path
+        dst: destination folder
+    '''
     with open(os.devnull, "w") as ffmpeg_log:
         command = 'ffmpeg -i ' + video + ' -vf scale=400:300 ' + '-qscale:v 2 '+ '{0}/%06d.jpg'.format(dst)
         subprocess.call(command, shell=True, stdout=ffmpeg_log, stderr=ffmpeg_log)
 
 def extract_image_feats(opt, model, load_image_fn):
+    '''
+    Extract features by feeding a certain amount of frames jpg into
+    an ImageNet pre-trained model, concatnenate them together and 
+    save the numpy array into a .npy file in the video folder.
+
+    Args:
+        opt: the option dictionary
+        model: the model to extract image features
+        load_image_fn: the function to load the image and feed into the CNN
+    '''
     global C, H, W
     model.eval()
 
@@ -63,6 +81,13 @@ def extract_image_feats(opt, model, load_image_fn):
 
 
 def vToA(opt):
+    '''
+    Convert videos into audio .wav file. Skip the video that does not have 
+    any sound.
+
+    Args:
+        opt: option dictionary 
+    '''
     video_dir = opt['video_dir']
     dst = opt['output_dir']
     
@@ -85,6 +110,15 @@ def vToA(opt):
 
 
 def split_audio(opt):
+    '''
+    splitting audio files into 1-sec segments, and extract 
+    MFCCs for the segment. All segments are pad into the 
+    same temporal length, concatenated together and then pad
+    into a certain fixed length.
+
+    Args:
+        opt: option dictionary
+    '''
     print('splitting audios...')
     output_dir = opt['output_dir']
     print('output directory: '+output_dir)
@@ -122,9 +156,9 @@ def split_audio(opt):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--video_dir', type=str, 
+    parser.add_argument('--video_dir', type=str, default='../msrvtt_2017/train-video',
     help='The video dir that one would like to extract audio file from')
-    parser.add_argument('--output_dir', type=str, 
+    parser.add_argument('--output_dir', type=str, default='../msrvtt_2017/preprocessed',
     help='The file output directory')
     parser.add_argument('--output_channels', type=int, default=1, 
     help='The number of output audio channels, default to 1')
@@ -141,8 +175,10 @@ def main():
     opt = parser.parse_args()
     opt=vars(opt)
 
-    #vToA(opt)
-    #split_audio(opt)
+    if not os.path.exists(opt['output_dir']):
+        os.mkdir(opt['output_dir'])
+    vToA(opt)
+    split_audio(opt)
     print('cleaning up original .wav files...')
     dir = opt['output_dir']
     dir = os.listdir(dir)
